@@ -9,11 +9,11 @@
 ### create a new blazor webassembly project
 - Open a terminal in vscode
 - Navigate to the directory you want to create a project
-- Run the following command, replace testApp with desired name
+- Run the following command, replace testApp with desired name\
 dotnet new blazorwasm -o testApp
 
 ### open the project in vscode 
-- open a terminal and run the following command
+- open a terminal and run the following command\
 dotnet run
 
 ### Open app in browser 
