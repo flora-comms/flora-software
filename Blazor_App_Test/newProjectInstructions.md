@@ -1,4 +1,4 @@
-#### Instructions for creating a Blazor Test application
+# Instructions for creating a Blazor Test application
 
 ### Download and install .net sdk from microsoft website
 - run dotnet --version in terminal to confirm installation
