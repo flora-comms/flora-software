@@ -19,6 +19,9 @@ dotnet run
 ### Open app in browser 
 visit http://localhost:5087 in your browser to view the app
 
+or run the following command which will launch the app in your browser\
+dotnet watch
+
 
 
 
