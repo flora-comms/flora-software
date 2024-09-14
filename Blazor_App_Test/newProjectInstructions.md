@@ -22,6 +22,12 @@ visit http://localhost:5087 in your browser to view the app
 or run the following command which will launch the app in your browser\
 dotnet watch
 
+### Generate static files 
+- run\
+dotnet publish -c Release
+- This will generate the static files in bin/Release/netX.X/publish/wwwroot
+
+
 
 
 
