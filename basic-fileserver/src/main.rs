@@ -2,19 +2,20 @@
 #![no_main]
 
 use embassy_executor::Spawner;
-use embassy_net::{Ipv4Cidr, Stack as NetStack, StackResources, StaticConfigV4};
+use embassy_net::{tcp::TcpSocket, Ipv4Cidr, IpListenEndpoint, Stack as NetStack, StackResources, StaticConfigV4};
 use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
 use esp_hal::{
     clock::ClockControl, 
     // for use with second core...
-    // cpu_control::Stack as CpuStack, 
-    gpio::Io, 
+    // cpu_control::Stack as CpuStack,
+    // For use with IO
+    // gpio::Io, 
     peripherals::Peripherals, 
     system::SystemControl, 
     timer::timg::TimerGroup
 };
-use esp_println::println;
+use esp_println::{println, print};
 use esp_wifi::wifi::{AccessPointConfiguration, Configuration, WifiApDevice, WifiController, WifiDevice, WifiEvent, WifiState};
 // for use with second core
 // static mut APP_CORE_STACK: CpuStack<8192> = CpuStack::new();
@@ -117,20 +118,88 @@ async fn main(spawner: Spawner) -> ! {
     );
 
     spawner.spawn(new_connection(controller)).ok();
-    spawner.spawn(net_task(netstack)).ok();
+    spawner.spawn(net_task(&netstack)).ok();
 
-    // TODO: THIS IS WHERE I LEFT OFF FOR THE NIGHT
-    // 
-    // 
-    // 
-    // 
-    // 
-    // 
+    let mut rx_buffer = [0; 1536];
+    let mut tx_buffer = [0; 1536];
 
     loop {
-        // wait for new connection
-        
-        // start new connection task
+        if netstack.is_link_up() {
+            break;
+        }
+        Timer::after(Duration::from_millis(500)).await;
+    }
 
+    println!("Connect to the AP 'esp-wifi' and point your browser to http://192.168.5.1:8080/");
+    
+    let mut socket = TcpSocket::new(&netstack, &mut rx_buffer, &mut tx_buffer);
+    socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+
+    loop {
+        println!("Wait for connection...");
+        let r = socket
+            .accept( IpListenEndpoint {
+                addr: None,
+                port: 8080,
+            }).await;
+
+        println!("Connected!");
+        
+        if let Err(e) = r {
+            println!("Connection error: {:?}", e);
+            continue;
+        }
+
+        use embedded_io_async::Write;
+
+        let mut buffer = [0u8; 1024];
+        let mut pos = 0;
+        loop {
+            match socket.read(&mut buffer).await {
+                Ok(0) => {
+                    println!("Read EOF");
+                    break;
+                }
+                Ok(len) => {
+                    let to_print: &str = 
+                        unsafe { core::str::from_utf8_unchecked(&buffer[..(pos+len)])};
+                    
+                    if to_print.contains("\r\n\r\n") {
+                        print!("{}", to_print);
+                    }
+
+                    pos += len;
+                }
+
+                Err(e) => {
+                    println!("Read Error: {:?}", e);
+                }
+            }
+
+            let r = socket.write_all(
+                b"HTTP/1.0 200 OK\r\n\r\n\
+            <html>\
+                <body>\
+                    <h1>Hello Rust! Hello esp-wifi!</h1>\
+                </body>\
+            </html>\r\n\
+            ",
+            ).await;
+
+            if let Err(e) = r {
+                println!("Write Error: {:?}", e);
+            }
+
+            let r = socket.flush().await;
+
+            if let Err(e) = r {
+                println!("Flush Error: {:?}", e);
+            }
+
+            socket.close();
+            Timer::after(Duration::from_millis(1000)).await;
+
+            socket.abort();
+        }
     }
 }

@@ -127,6 +127,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fe8f5a8a398345e52358e18ff07cc17a568fbca5c6f73873d3a62056309603"
 
 [[package]]
+name = "basic-file-server"
+version = "0.1.0"
+dependencies = [
+ "embassy-executor",
+ "embassy-net",
+ "embassy-sync 0.6.0",
+ "embassy-time",
+ "embedded-io",
+ "embedded-io-async",
+ "esp-backtrace",
+ "esp-hal",
+ "esp-hal-embassy",
+ "esp-println",
+ "esp-wifi",
+ "heapless",
+ "log",
+ "smoltcp",
+ "static_cell",
+]
+
+[[package]]
 name = "basic-toml"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -736,26 +757,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1a597f11c115df19df85bb38456ebf61c08400e254afe9244c542f702c7f744"
 dependencies = [
  "anyhow",
-]
-
-[[package]]
-name = "esp32-s3-embassy-template"
-version = "0.1.0"
-dependencies = [
- "embassy-executor",
- "embassy-net",
- "embassy-sync 0.6.0",
- "embassy-time",
- "embedded-io",
- "esp-backtrace",
- "esp-hal",
- "esp-hal-embassy",
- "esp-println",
- "esp-wifi",
- "heapless",
- "log",
- "smoltcp",
- "static_cell",
 ]
 
 [[package]]
