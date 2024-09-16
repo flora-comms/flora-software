@@ -109,6 +109,14 @@ async fn main(_spawner: Spawner) -> ! {
         )
     );
 
+    // TODO: THIS IS WHERE I LEFT OFF FOR THE NIGHT
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+
     loop {
         // wait for new connection
         
