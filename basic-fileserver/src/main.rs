@@ -6,11 +6,18 @@ use embassy_net::{Ipv4Cidr, Stack as NetStack, StackResources, StaticConfigV4};
 use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
 use esp_hal::{
-    clock::ClockControl, cpu_control::Stack as CpuStack, get_core, gpio::Io, peripherals::Peripherals, system::SystemControl, timer::timg::TimerGroup
+    clock::ClockControl, 
+    // for use with second core...
+    // cpu_control::Stack as CpuStack, 
+    gpio::Io, 
+    peripherals::Peripherals, 
+    system::SystemControl, 
+    timer::timg::TimerGroup
 };
 use esp_println::println;
 use esp_wifi::wifi::{AccessPointConfiguration, Configuration, WifiApDevice, WifiController, WifiDevice, WifiEvent, WifiState};
-static mut APP_CORE_STACK: CpuStack<8192> = CpuStack::new();
+// for use with second core
+// static mut APP_CORE_STACK: CpuStack<8192> = CpuStack::new();
 
 macro_rules! mk_static {
     ($t:ty,$val:expr) => {{
@@ -55,10 +62,10 @@ async fn net_task(stack: &'static NetStack<WifiDevice<'static, WifiApDevice>>) {
 }
 
 #[esp_hal_embassy::main]
-async fn main(_spawner: Spawner) -> ! {
+async fn main(spawner: Spawner) -> ! {
     let peripherals = Peripherals::take();
     let system = SystemControl::new(peripherals.SYSTEM);
-    let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
+    // let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
     let clocks = ClockControl::max(system.clock_control).freeze();
 
     esp_println::logger::init_logger_from_env();
@@ -108,6 +115,9 @@ async fn main(_spawner: Spawner) -> ! {
             seed,
         )
     );
+
+    spawner.spawn(new_connection(controller)).ok();
+    spawner.spawn(net_task(netstack)).ok();
 
     // TODO: THIS IS WHERE I LEFT OFF FOR THE NIGHT
     // 
