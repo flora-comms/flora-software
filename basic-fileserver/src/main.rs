@@ -1,38 +1,57 @@
 #![no_std]
 #![no_main]
 
-
-use core::ptr::addr_of_mut;
-
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Ticker};
-use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, signal::Signal};
+use embassy_net::{Ipv4Cidr, Stack as NetStack, StackResources, StaticConfigV4};
+use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
 use esp_hal::{
-    clock::ClockControl, cpu_control::{CpuControl, Stack}, get_core, gpio::{GpioPin, Io, Level, Output}, peripherals::Peripherals, system::SystemControl, timer::timg::TimerGroup
+    clock::ClockControl, cpu_control::Stack as CpuStack, get_core, gpio::Io, peripherals::Peripherals, system::SystemControl, timer::timg::TimerGroup
 };
-use esp_hal_embassy::Executor;
 use esp_println::println;
-use static_cell::{self, StaticCell};
+use esp_wifi::wifi::{AccessPointConfiguration, Configuration, WifiApDevice, WifiController, WifiDevice, WifiEvent, WifiState};
+static mut APP_CORE_STACK: CpuStack<8192> = CpuStack::new();
 
-static mut APP_CORE_STACK: Stack<8192> = Stack::new();
+macro_rules! mk_static {
+    ($t:ty,$val:expr) => {{
+        static STATIC_CELL: static_cell::StaticCell<$t> = static_cell::StaticCell::new();
+        #[deny(unused_attributes)]
+        let x = STATIC_CELL.uninit().write(($val));
+        x
+    }};
+}
 
-// Says hello every 2 seconds
+// connection handler
 #[embassy_executor::task]
-async fn blink_2sec (
-    mut led: Output<'static, GpioPin<37>>, 
-    cntl_signal: &'static Signal<CriticalSectionRawMutex, bool>,
-) {
-    println!("Hello from core {:?}", get_core() as usize);
+async fn new_connection(mut controller: WifiController<'static>) {
+    println!("Start connection task");
+    println!("Device capabilities: {:?}", controller.get_capabilities());
     loop {
-        if cntl_signal.wait().await {
-            println!("LED ON signal recieved on core {:?}. Turning LED ON...", get_core() as usize);
-            led.set_high();
-        } else {
-            println!("LED OFF signal recieved on core {:?}. Turning LED ON...", get_core() as usize);
-            led.set_low();
+        match esp_wifi::wifi::get_wifi_state() {
+            WifiState::ApStarted => {
+                // wait until no connection
+                controller.wait_for_event(WifiEvent::ApStop).await;
+                Timer::after(Duration::from_millis(5000)).await;
+            }
+           
+           _ => {}
+        }
+        if !matches!(controller.is_started(), Ok(true)) {
+            let client_config = Configuration::AccessPoint(AccessPointConfiguration {
+                ssid: "esp-wifi".try_into().unwrap(),
+                ..Default::default()
+            });
+            controller.set_configuration(&client_config).unwrap();
+            println!("Starting Wifi");
+            controller.start().await.unwrap();
+            println!("Wifi Started!");
         }
     }
+}
+
+#[embassy_executor::task]
+async fn net_task(stack: &'static NetStack<WifiDevice<'static, WifiApDevice>>) {
+    stack.run().await;
 }
 
 #[esp_hal_embassy::main]
@@ -51,7 +70,7 @@ async fn main(_spawner: Spawner) -> ! {
     // create a hardware timer for use by embassy
     let em_timer0 = timg1.timer0;
     // wifi initialization
-    let _init = esp_wifi::initialize(
+    let wifi_init = esp_wifi::initialize(
         esp_wifi::EspWifiInitFor::Wifi,
         timg0.timer0,
         esp_hal::rng::Rng::new(peripherals.RNG),
@@ -63,43 +82,37 @@ async fn main(_spawner: Spawner) -> ! {
     // initialize the maine executor with TIMG1.Timer0
     esp_hal_embassy::init(&clocks, em_timer0);
 
-    // create led pin
-    let led = Output::new(io.pins.gpio37, Level::High);
+    // start softAP
+    let wifi = peripherals.WIFI;
+    let (wifi_interface, controller) = esp_wifi::wifi::new_with_mode(&wifi_init, wifi, WifiApDevice).unwrap();
 
-    // create a closure to run the app core task
-    let app_task = move |led: Output<'static, GpioPin<37>>, cntl_signal: &'static Signal<CriticalSectionRawMutex, bool>| {
-        static EXECUTOR: StaticCell<Executor> = StaticCell::new();
-        let executor = EXECUTOR.init(Executor::new());
-        executor.run(|spawner| {
-            spawner.spawn(blink_2sec(led, cntl_signal)).ok();
-        });
-    };
+    // ipv4 config
+    let inet_config = embassy_net::Config::ipv4_static(
+        StaticConfigV4 {
+            address: Ipv4Cidr::new(embassy_net::Ipv4Address::new(192, 168, 5, 1), 24),
+            gateway: Some(embassy_net::Ipv4Address::new(192, 168, 5, 1)),
+            dns_servers: Default::default()
+        }
+    );
 
-    // cpu app core stuff
-    // create an LED control signal
-    // This is the control signal. It is a statically allocated critical section mutex, so it disables interrupts. The mutex contains a bool indicating the state of the LED
-    static LED_CNTL: StaticCell<Signal<CriticalSectionRawMutex, bool>> = StaticCell::new();
-    // This initializes the led control signal and actually places the signal in the static cell. The static cell is dereferenced and initialized, with the mutex type being infered. Then a reference to it is created as led_cntl_signal
-    let led_cntl_signal = &*LED_CNTL.init(Signal::new());
-    // create a cpu control object to assign tasks to the different cores
-    let mut cpu_control = CpuControl::new(peripherals.CPU_CTRL);
-    // create a guard around the app core
-    let _guard = cpu_control
-        .start_app_core(unsafe { &mut *addr_of_mut!(APP_CORE_STACK) }, move || { app_task(led, led_cntl_signal) })
-        .unwrap();
+    // very random, very demure
+    let seed = 1234;
 
-
-    // create a ticker to control the timing of the led.
-    let mut ticker = Ticker::every(Duration::from_millis(500));
-    println!("Starting led control on main core - {:?}", get_core() as usize);
+    // init network stack
+    let netstack = &*mk_static!(
+        NetStack<WifiDevice<'_, WifiApDevice>>,
+        NetStack::new(
+            wifi_interface,
+            inet_config,
+            mk_static!(StackResources<3>, StackResources::<3>::new()),
+            seed,
+        )
+    );
 
     loop {
-        println!("Sending LED ON signal from core {:?}", get_core() as usize);
-        led_cntl_signal.signal(true);
-        ticker.next().await;
+        // wait for new connection
+        
+        // start new connection task
 
-        println!("Sending LED OFF signal from core {:?}", get_core() as usize);
-        led_cntl_signal.signal(false);
-        ticker.next().await;
     }
 }

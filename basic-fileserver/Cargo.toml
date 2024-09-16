@@ -16,12 +16,7 @@ esp-hal = { version = "0.20.1", features = [ "esp32s3" ] }
 esp-println = { version = "0.11.0", features = ["esp32s3", "log"] }
 log = { version = "0.4.21" }
 embedded-io = "0.6.1"
-esp-wifi = { version = "0.8.0", features = [
-    "esp32s3",
-    "phy-enable-usb",
-    "utils",
-    "wifi",
-] }
+esp-wifi = { version = "0.9.1", features = ["esp32s3", "wifi", "wifi-default", "embassy-net", "utils"]}
 heapless = { version = "0.8.0", default-features = false }
 smoltcp = { version = "0.11.0", default-features = false, features = [
     "medium-ethernet",
@@ -39,6 +34,7 @@ embassy-executor = { version = "0.6.0", features = ["integrated-timers"] }
 static_cell = "2.1.0"
 esp-hal-embassy = { version = "0.3.0", features = ["esp32s3", "integrated-timers"] }
 embassy-sync = "0.6.0"
+embassy-net = { version = "0.4.0", features = ["proto-ipv4", "tcp", "medium-ethernet"] }
 
 [profile.dev]
 # Rust debug is too slow.
