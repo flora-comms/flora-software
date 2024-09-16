@@ -2064,11 +2064,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/Cam/Documents/fLoRa/flora-software/Blazor_App_Test/testApp/testApp.csproj",
+      "projectUniqueName": "/Users/Cam/Documents/fLoRa/flora-software/Archives/Blazor_App_Test/testApp/testApp.csproj",
       "projectName": "testApp",
-      "projectPath": "/Users/Cam/Documents/fLoRa/flora-software/Blazor_App_Test/testApp/testApp.csproj",
+      "projectPath": "/Users/Cam/Documents/fLoRa/flora-software/Archives/Blazor_App_Test/testApp/testApp.csproj",
       "packagesPath": "/Users/Cam/.nuget/packages/",
-      "outputPath": "/Users/Cam/Documents/fLoRa/flora-software/Blazor_App_Test/testApp/obj/",
+      "outputPath": "/Users/Cam/Documents/fLoRa/flora-software/Archives/Blazor_App_Test/testApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/Cam/.nuget/NuGet/NuGet.Config"
