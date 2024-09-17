@@ -26,7 +26,7 @@ use embassy_net::{
 };
 use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
-use esp_hal::{clock::ClockControl, peripherals, prelude::*, rng::Rng, system::{SystemClockControl, SystemControl}, timer::timg::TimerGroup};
+use esp_hal::{clock::ClockControl, peripherals, rng::Rng, system::SystemControl, timer::timg::TimerGroup};
 use esp_println::{print, println};
 use esp_wifi::{
     initialize,
@@ -42,7 +42,6 @@ use esp_wifi::{
     EspWifiInitFor,
 };
 
-// When you are okay with using a nightly compiler it's better to use https://docs.rs/static_cell/2.1.0/static_cell/macro.make_static.html
 macro_rules! mk_static {
     ($t:ty,$val:expr) => {{
         static STATIC_CELL: static_cell::StaticCell<$t> = static_cell::StaticCell::new();
