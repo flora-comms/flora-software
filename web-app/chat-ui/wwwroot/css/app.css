@@ -119,12 +119,13 @@ code {
 }
 
 .message.received {
-    background-color: #e0e0e0;
+    background-color: #0084ff;
+    color:white;
     align-self: flex-start;
 }
 
 .message.sent {
-    background-color: #0084ff;
+    background-color: #28a745;
     color: white;
     align-self: flex-end;
 }

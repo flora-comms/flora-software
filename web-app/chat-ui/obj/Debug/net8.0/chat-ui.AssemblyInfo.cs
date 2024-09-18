@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("chat-ui")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b594364ed8090cf87b1d8d590697f2af919700d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea7f08322e767d56de079460ad896393b45259ae")]
 [assembly: System.Reflection.AssemblyProductAttribute("chat-ui")]
 [assembly: System.Reflection.AssemblyTitleAttribute("chat-ui")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
