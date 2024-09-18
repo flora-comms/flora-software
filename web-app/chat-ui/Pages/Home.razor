@@ -15,9 +15,18 @@
 </div>
 
 <div class="inputContainer">
-<input @bind="message">
-<button @onclick="sendMessage">Send</button>
+    <div class="inputSection">
+        <input @bind="message" />
+        <button @onclick="sendMessage">Send</button>
+        <br>
+        <br>
+        <sosButton @onclick="sendMessage">SOS</sosButton>
+    </div>
 </div>
+
+
+
+
 
 @code
 {
@@ -29,17 +38,22 @@
     private async Task sendMessage()
     {
         if (!string.IsNullOrWhiteSpace(message))
-        messagesSent.Add(message);
+            messagesSent.Add(message);
         message = string.Empty;
 
         await Task.Delay(2000);
         receiveMessage();
     }
 
-        private void receiveMessage()
+    private void receiveMessage()
     {
         messagesReceived.Add("Auto Reply");
         message = string.Empty;
+    }
+
+    private void sosButton()
+    {
+
     }
 
 }

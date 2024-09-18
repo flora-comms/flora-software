@@ -158,3 +158,13 @@ button {
     cursor: pointer; /* Change cursor to pointer on hover */
 }
 
+sosButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #e65e38; /* Green background */
+    color: white; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Optional: Rounded corners for the button */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
