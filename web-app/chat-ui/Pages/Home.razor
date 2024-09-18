@@ -2,17 +2,22 @@
 
 <PageTitle>Blazor UI Chat Sample</PageTitle>
 
-<h3>Messages</h3>
-<ul>
+<h3>Public</h3>
+<div class="chatContainer">
+    @foreach (var msg in messagesReceived)
+    {
+        <div class="message received">@msg</div>
+    }
     @foreach (var msg in messagesSent)
     {
-        <li>@msg</li>
+        <div class="message sent">@msg</div>
     }
-</ul>
+</div>
 
+<div class="inputContainer">
 <input @bind="message">
 <button @onclick="sendMessage">Send</button>
-
+</div>
 
 @code
 {

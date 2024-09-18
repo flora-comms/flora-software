@@ -101,3 +101,59 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+/* Chat styling */
+.chatContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.message.received {
+    background-color: #e0e0e0;
+    align-self: flex-start;
+}
+
+.message.sent {
+    background-color: #0084ff;
+    color: white;
+    align-self: flex-end;
+}
+
+.inputContainer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    max-width: 600px;
+    gap: 10px;
+    margin: 20px auto 0;
+    background-color: #D3D3D3; /* Light gray background */
+    padding: 10px; /* Add padding to the container */
+    border-radius: 5px; /* Optional: Rounded corners */
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745; /* Green background */
+    color: white; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Optional: Rounded corners for the button */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
