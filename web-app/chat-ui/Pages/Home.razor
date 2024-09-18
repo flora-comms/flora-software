@@ -26,10 +26,19 @@
     private List<string> messagesSent = new List<string>();
     private List<string> messagesReceived = new List<string>();
 
-    private void sendMessage()
+    private async Task sendMessage()
     {
         if (!string.IsNullOrWhiteSpace(message))
         messagesSent.Add(message);
+        message = string.Empty;
+
+        await Task.Delay(2000);
+        receiveMessage();
+    }
+
+        private void receiveMessage()
+    {
+        messagesReceived.Add("Auto Reply");
         message = string.Empty;
     }
 
