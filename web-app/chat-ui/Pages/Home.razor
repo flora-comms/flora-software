@@ -1,7 +1,31 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Blazor UI Chat Sample</PageTitle>
 
-<h1>chat ui Home</h1>
+<h3>Messages</h3>
+<ul>
+    @foreach (var msg in messagesSent)
+    {
+        <li>@msg</li>
+    }
+</ul>
 
-Welcome to your new app.
+<input @bind="message">
+<button @onclick="sendMessage">Send</button>
+
+
+@code
+{
+    private string? message;
+
+    private List<string> messagesSent = new List<string>();
+    private List<string> messagesReceived = new List<string>();
+
+    private void sendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(message))
+        messagesSent.Add(message);
+        message = string.Empty;
+    }
+
+}

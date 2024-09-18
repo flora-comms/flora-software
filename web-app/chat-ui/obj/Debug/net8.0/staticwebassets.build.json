@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Q+ysO9+F6a63OaoLq6H98bMdig46J+3hLoAX3fY/DD0=",
+  "Hash": "2ydMfJEOm+ej62Z0CcxPMtmWW5bN4H9Isit7dhMzPxU=",
   "Source": "chat-ui",
   "BasePath": "/",
   "Mode": "Root",
@@ -7919,25 +7919,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/index.html"
-    },
-    {
-      "Identity": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/wwwroot/sample-data/weather.json",
-      "SourceId": "chat-ui",
-      "SourceType": "Discovered",
-      "ContentRoot": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "sample-data/weather.json",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/sample-data/weather.json"
     }
   ]
 }

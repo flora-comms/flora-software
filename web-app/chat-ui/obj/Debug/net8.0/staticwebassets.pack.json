@@ -37,10 +37,6 @@
       "PackagePath": "staticwebassets/index.html"
     },
     {
-      "Id": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/wwwroot/sample-data/weather.json",
-      "PackagePath": "staticwebassets/sample-data/weather.json"
-    },
-    {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.chat-ui.props",
       "PackagePath": "build\\chat-ui.props"
     },
