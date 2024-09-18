@@ -818,7 +818,6 @@
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.chat-ui.props
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/staticwebassets.pack.json
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/scopedcss/Layout/MainLayout.razor.rz.scp.css
-/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/scopedcss/Layout/NavMenu.razor.rz.scp.css
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/scopedcss/bundle/chat-ui.styles.css
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/scopedcss/projectbundle/chat-ui.bundle.scp.css
 /Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/Debug/net8.0/compressed/eqz5tzqzn4.gz
