@@ -103,12 +103,50 @@ code {
 }
 
 /* Chat styling */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 70%; /* Full width */
+  height: 70%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
 .chatContainer {
+    width: 100%; /* Adjust width as needed */
+    max-width: 600px; /* Optional: Maximum width for the container */
+    height: 400px; /* Set a fixed height */
+    margin: 0 auto; /* Center the container horizontally */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #b4b2b2; /* Optional: Add a border for better visibility */
+    padding: 10px; /* Optional: Add padding inside the container */
+    box-sizing: border-box; /* Include padding and border in the width and height */
+    background-color: #f9f9f9; /* Optional: Background color */
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 600px;
-    margin: 0 auto;
+    flex-direction: column; /* Align messages vertically */
+    gap: 10px; /* Add space between messages */
+    border-radius: 5px; /* Optional: Rounded corners */
 }
 
 .message {
@@ -136,16 +174,18 @@ code {
     gap: 10px;
     max-width: 600px;
     gap: 10px;
-    margin: 20px auto 0;
+    margin: 10px auto 0;
     background-color: #D3D3D3; /* Light gray background */
     padding: 10px; /* Add padding to the container */
     border-radius: 5px; /* Optional: Rounded corners */
+    border: 1px solid #b4b2b2; /* Optional: Add a border for better visibility */
 }
 
 input {
     flex: 1;
     padding: 10px;
     font-size: 16px;
+    width: 400px;
 }
 
 button {
@@ -158,10 +198,11 @@ button {
     cursor: pointer; /* Change cursor to pointer on hover */
 }
 
-sosButton {
+.sosButton {
+    width: 100%; /* Make the button fill the width of its container */
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #e65e38; /* Green background */
+    background-color: #e65e38; /* Red background */
     color: white; /* White text color */
     border: none; /* Remove default border */
     border-radius: 5px; /* Optional: Rounded corners for the button */

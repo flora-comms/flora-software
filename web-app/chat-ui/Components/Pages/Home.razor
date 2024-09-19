@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using chat_ui.Components
 
 <PageTitle>Blazor UI Chat Sample</PageTitle>
 
@@ -20,17 +21,16 @@
         <button @onclick="sendMessage">Send</button>
         <br>
         <br>
-        <sosButton @onclick="sendMessage">SOS</sosButton>
+        <button class="sosButton" @onclick="showModal">SOS</button>
     </div>
 </div>
 
-
-
-
+<SosModal IsVisible="isVisible" HideModal="hideModal" />
 
 @code
 {
     private string? message;
+    private bool isVisible = false;
 
     private List<string> messagesSent = new List<string>();
     private List<string> messagesReceived = new List<string>();
@@ -41,19 +41,23 @@
             messagesSent.Add(message);
         message = string.Empty;
 
-        await Task.Delay(2000);
+        await Task.Delay(1000);
         receiveMessage();
     }
 
     private void receiveMessage()
     {
-        messagesReceived.Add("Auto Reply");
+        messagesReceived.Add("auto-reply");
         message = string.Empty;
     }
 
-    private void sosButton()
+    private void showModal()
     {
-
+        isVisible = true;
+    }
+    private void hideModal()
+    {
+        isVisible = false;
     }
 
 }
