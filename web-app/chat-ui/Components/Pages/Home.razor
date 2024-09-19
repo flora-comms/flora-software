@@ -5,11 +5,11 @@
 
 <h3>Public</h3>
 <div class="chatContainer">
-    @foreach (var msg in messagesReceived)
+    @foreach (var msg in openChat.MessagesReceived)
     {
         <div class="message received">@msg</div>
     }
-    @foreach (var msg in messagesSent)
+    @foreach (var msg in openChat.MessagesSent)
     {
         <div class="message sent">@msg</div>
     }
@@ -17,8 +17,8 @@
 
 <div class="inputContainer">
     <div class="inputSection">
-        <input @bind="message" />
-        <button @onclick="sendMessage">Send</button>
+        <input @bind="openChat.Message" />
+        <button @onclick="openChat.SendMessage">Send</button>
         <br>
         <br>
         <button class="sosButton" @onclick="showModal">SOS</button>
@@ -29,27 +29,8 @@
 
 @code
 {
-    private string? message;
+    private Chat openChat = new Chat(); // Create an chat object 
     private bool isVisible = false;
-
-    private List<string> messagesSent = new List<string>();
-    private List<string> messagesReceived = new List<string>();
-
-    private async Task sendMessage()
-    {
-        if (!string.IsNullOrWhiteSpace(message))
-            messagesSent.Add(message);
-        message = string.Empty;
-
-        await Task.Delay(1000);
-        receiveMessage();
-    }
-
-    private void receiveMessage()
-    {
-        messagesReceived.Add("auto-reply");
-        message = string.Empty;
-    }
 
     private void showModal()
     {
@@ -59,5 +40,4 @@
     {
         isVisible = false;
     }
-
 }
