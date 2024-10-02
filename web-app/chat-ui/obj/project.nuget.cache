@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Nw93UEScd/M=",
+  "dgSpecHash": "3Kwyuz7twQE=",
   "success": true,
-  "projectFilePath": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/chat-ui.csproj",
+  "projectFilePath": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj",
   "expectedPackageFiles": [
     "/Users/Cam/.nuget/packages/microsoft.aspnetcore.authorization/8.0.8/microsoft.aspnetcore.authorization.8.0.8.nupkg.sha512",
     "/Users/Cam/.nuget/packages/microsoft.aspnetcore.components/8.0.8/microsoft.aspnetcore.components.8.0.8.nupkg.sha512",

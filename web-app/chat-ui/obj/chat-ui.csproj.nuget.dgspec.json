@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/chat-ui.csproj": {}
+    "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj": {}
   },
   "projects": {
-    "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/chat-ui.csproj": {
+    "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/chat-ui.csproj",
+        "projectUniqueName": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj",
         "projectName": "chat-ui",
-        "projectPath": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/chat-ui.csproj",
+        "projectPath": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj",
         "packagesPath": "/Users/Cam/.nuget/packages/",
-        "outputPath": "/Users/Cam/Documents/fLoRa/flora-software/web-app/chat-ui/obj/",
+        "outputPath": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/Cam/.nuget/NuGet/NuGet.Config"
