@@ -2,29 +2,26 @@ namespace chat_ui.Models
 {
     public class Chat
     {
-        // Public properties to access message lists
+        public List<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
         public string? Message { get; set; }
-        public List<string> MessagesSent { get; set; } = new List<string>();
-        public List<string> MessagesReceived { get; set; } = new List<string>();
 
-        // Public method to send a message
-        public async Task SendMessage()
+        public void SendMessage()
         {
-            if (!string.IsNullOrWhiteSpace(Message))
+            if (!string.IsNullOrEmpty(Message))
             {
-                MessagesSent.Add(Message);
-                Message = string.Empty;
+                Messages.Add(new ChatMessage { Message = Message, IsSent = true });
+                Message = string.Empty; // Clear input after sending
 
-                await Task.Delay(1000); // Simulate delay
-                ReceiveMessage();
+
+
+                // Send an auto-reply message
+                ReceiveMessage("auto-reply");
             }
         }
 
-        // Public method to receive a message
-        public void ReceiveMessage()
+        public void ReceiveMessage(string message)
         {
-            MessagesReceived.Add("auto-reply"); // For testing purposes
-            Message = string.Empty;
+            Messages.Add(new ChatMessage { Message = message, IsSent = false });
         }
     }
 }

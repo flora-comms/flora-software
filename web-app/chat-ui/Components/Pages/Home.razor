@@ -5,13 +5,9 @@
 
 <h3>Public</h3>
 <div class="chatContainer">
-    @foreach (var msg in openChat.MessagesReceived)
+    @foreach (var msg in openChat.Messages.OrderBy(m => m.Timestamp))
     {
-        <div class="message received">@msg</div>
-    }
-    @foreach (var msg in openChat.MessagesSent)
-    {
-        <div class="message sent">@msg</div>
+        <div class="message @(msg.IsSent ? "sent" : "received")">@msg.Message</div>
     }
 </div>
 
@@ -23,18 +19,18 @@
     <button class="sosButton" @onclick="showModal">SOS</button>
 </div>
 
-
 <SosModal IsVisible="isVisible" HideModal="hideModal" />
 
 @code
 {
-    private Chat openChat = new Chat(); // Create an chat object 
+    private Chat openChat = new Chat(); // Create a chat object 
     private bool isVisible = false;
 
     private void showModal()
     {
         isVisible = true;
     }
+
     private void hideModal()
     {
         isVisible = false;
