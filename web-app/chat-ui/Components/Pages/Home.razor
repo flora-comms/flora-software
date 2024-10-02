@@ -19,11 +19,10 @@
     <div class="inputSection">
         <input @bind="openChat.Message" />
         <button @onclick="openChat.SendMessage">Send</button>
-        <br>
-        <br>
-        <button class="sosButton" @onclick="showModal">SOS</button>
     </div>
+    <button class="sosButton" @onclick="showModal">SOS</button>
 </div>
+
 
 <SosModal IsVisible="isVisible" HideModal="hideModal" />
 
