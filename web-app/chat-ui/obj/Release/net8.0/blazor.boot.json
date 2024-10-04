@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "chat-ui",
   "resources": {
-    "hash": "sha256-nu+3CbC0nLf3Koz4+SoM1rp6CH6PA5wdME4yUQvMlcE=",
+    "hash": "sha256-XdEDWAajJSCSekb8k7wywq0JOmAZ7dGJn46IqUHqJ9U=",
     "jsModuleNative": {
       "dotnet.native.8.0.8.v00dsapus2.js": "sha256-juC5sA7gHTLXFEhAKgdM2/RavswpwCtDfjYGsAz2FXg="
     },
@@ -208,10 +208,10 @@
       "mscorlib.wasm": "sha256-Gz8PyW2/fwihe5ul81OwmRUrU71r+KtbyRw6xlOGD+Q=",
       "netstandard.wasm": "sha256-jMTqIQzoDS810lyhZpMO5eEC36EzntXqSVn+2qwkOMQ=",
       "System.Private.CoreLib.wasm": "sha256-NFj5WE5VLP2LptZIRJCUIc1AMk06FmxpsSILfPISwAw=",
-      "chat-ui.wasm": "sha256-OvJ9scAEfF/EQgrECwq/oNLncY3rgrjOYKYx0wDjj2k="
+      "chat-ui.wasm": "sha256-lgdHVIXotsq//iCQ8fMYBfrpwr+Ne8AHl32fB2o52mQ="
     },
     "pdb": {
-      "chat-ui.pdb": "sha256-FQkXue2SBLq1h8Ng4VM5XH3W3ZOMUqPQIUIkXDb33GE="
+      "chat-ui.pdb": "sha256-Ypjcklbu6gPfrVwsUaM6TvbdApAKfHrAGYCLLf1XSjo="
     }
   },
   "cacheBootResources": true,

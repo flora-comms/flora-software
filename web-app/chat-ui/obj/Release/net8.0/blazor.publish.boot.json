@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "chat-ui",
   "resources": {
-    "hash": "sha256-CivpUTm5wH6a04jy3ylf4ypNNd3v+9E+4fSK1Xicr+A=",
+    "hash": "sha256-cdB6BrfsAbsw4JtPJLLBYiE/kodTe2OaON/afHN4kjA=",
     "jsModuleNative": {
       "dotnet.native.8.0.8.v00dsapus2.js": "sha256-juC5sA7gHTLXFEhAKgdM2/RavswpwCtDfjYGsAz2FXg="
     },
@@ -17,7 +17,7 @@
       "icudt_no_CJK.dat": "sha256-L7sV7NEYP37/Qr2FPCePo5cJqRgTXRwGHuwF5Q+0Nfs="
     },
     "assembly": {
-      "chat-ui.wasm": "sha256-OvJ9scAEfF/EQgrECwq/oNLncY3rgrjOYKYx0wDjj2k=",
+      "chat-ui.wasm": "sha256-lgdHVIXotsq//iCQ8fMYBfrpwr+Ne8AHl32fB2o52mQ=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-gTWj4rSctip0ykMvPVlDJocG9RkWcjreh82pWmW9UxU=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-spyk6aOlBqGuXrgkag654fMJljJemLYToKEcwC5Nvgo=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-Q4gQS+wAI/o1p0ABACPX+vUj06GrNg33CWKIBqv9S0w=",
