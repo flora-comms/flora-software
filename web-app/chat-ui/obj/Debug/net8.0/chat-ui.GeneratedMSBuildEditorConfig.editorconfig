@@ -13,31 +13,31 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = chat-ui
 build_property.RootNamespace = chat-ui
-build_property.ProjectDir = /Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/
+build_property.ProjectDir = C:\Users\c0508083\Documents\GitHub\flora-software\web-app\chat-ui\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui
+build_property.MSBuildProjectDirectory = C:\Users\c0508083\Documents\GitHub\flora-software\web-app\chat-ui
 build_property._RazorSourceGeneratorDebug = 
 
-[/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/App.razor]
+[C:/Users/c0508083/Documents/GitHub/flora-software/web-app/chat-ui/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/Components/Pages/Home.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
+[C:/Users/c0508083/Documents/GitHub/flora-software/web-app/chat-ui/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/Components/SosModal.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Tb3NNb2RhbC5yYXpvcg==
+[C:/Users/c0508083/Documents/GitHub/flora-software/web-app/chat-ui/Components/SosModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTb3NNb2RhbC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/_Imports.razor]
+[C:/Users/c0508083/Documents/GitHub/flora-software/web-app/chat-ui/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L01haW5MYXlvdXQucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = b-tfhu8ayjnb
+[C:/Users/c0508083/Documents/GitHub/flora-software/web-app/chat-ui/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-g0oy8e22ym
