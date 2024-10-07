@@ -1,0 +1,57 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.webassembly.js",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\obj\\Debug\\net8.0\\compressed\\clt048q5qt.gz",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js.gz"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\obj\\Debug\\net8.0\\scopedcss\\bundle\\chat-ui.styles.css",
+      "PackagePath": "staticwebassets\\chat-ui.styles.css"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\icon-192.png",
+      "PackagePath": "staticwebassets\\icon-192.png"
+    },
+    {
+      "Id": "C:\\Users\\c0508083\\Documents\\GitHub\\flora-software\\web-app\\chat-ui\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.chat-ui.props",
+      "PackagePath": "build\\chat-ui.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.chat-ui.props",
+      "PackagePath": "buildMultiTargeting\\chat-ui.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.chat-ui.props",
+      "PackagePath": "buildTransitive\\chat-ui.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.chat-ui.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
