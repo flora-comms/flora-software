@@ -2,11 +2,17 @@
 #include <ESPAsyncWebServer.h>
 #include <SD.h>  
 #include <esp_task_wdt.h>
+#include <ESPmDNS.h>
 
-const char *ssid = "Avalink";
+const char *ssid = "AVAlink";
 
 // SD card CS (Chip Select) pin
-#define SD_CS_PIN 34 
+#define SD_CS_PIN 13
+
+#define REASSIGN_PINS
+int sck = 14;
+int miso = 2;
+int mosi = 11;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
