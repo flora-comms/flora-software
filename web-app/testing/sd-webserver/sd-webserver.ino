@@ -6,7 +6,7 @@
 const char *ssid = "Avalink";
 
 // SD card CS (Chip Select) pin
-#define SD_CS_PIN 10
+#define SD_CS_PIN 34 
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -16,7 +16,7 @@ void setup() {
 
     // Set up Wi-Fi (AP mode)
     Serial.print("Setting up Access Point with SSID: ");
-    if (WiFi.softAP(ssid, password)) {
+    if (WiFi.softAP(ssid)) {
         Serial.println("Access Point setup complete");
     } else {
         Serial.println("Failed to set up Access Point");
