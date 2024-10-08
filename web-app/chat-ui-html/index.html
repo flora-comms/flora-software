@@ -5,6 +5,7 @@
 <head>
     <PageTitle>Chat Sample</PageTitle>
     <link rel="stylesheet" href="style.css">
+    <script src ="script.js"></script>
 </head>
 
 <body>
@@ -17,28 +18,11 @@
 
     <div class="inputContainer">
         <div class="inputSection">
-            <input /> 
-             <!-- input needs to be placed into a input string  -->
-            <button class="sendButton">Send
-                <!-- @onlclick will trigger a send message funstion
-                 checks if input is empty, and stores input to messages list if not  -->
-            </button>
+            <input type = "text" id = "message"></input> 
+            <button class="sendButton" @onclick = "sendMessage()">Send</button>
         </div>
         <button class="sosButton" @onclick="showModal">SOS</button>
     </div>
 
     <SosModal IsVisible="isVisible" HideModal="hideModal" />
 </body>
-
-<!-- 
-message class
-string - message
-bool - isSent
-Timestamp
-
-chat class
-List Messages
-
-sendMessage()
-receiveMessage()
--->
