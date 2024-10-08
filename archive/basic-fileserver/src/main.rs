@@ -24,13 +24,13 @@ use embassy_net::{
     StackResources,
     StaticConfigV4,
 };
+use embassy_embedded_hal::adapter::;
 use embassy_time::{Duration, Timer};
 use esp_backtrace as _;
-use esp_hal::{clock::ClockControl, peripherals, rng::Rng, system::SystemControl, timer::timg::TimerGroup};
+use esp_hal::{clock::ClockControl, dma::*, dma_buffers, gpio::Io, peripherals, prelude::_fugit_RateExtU32, rng::Rng, spi::{master::{Spi, SpiDma}, SpiMode}, system::SystemControl, timer::timg::TimerGroup};
 use esp_println::{print, println};
 use esp_wifi::{
-    initialize,
-    wifi::{
+    initialize, wifi::{
         AccessPointConfiguration,
         Configuration,
         WifiApDevice,
@@ -38,9 +38,10 @@ use esp_wifi::{
         WifiDevice,
         WifiEvent,
         WifiState,
-    },
-    EspWifiInitFor,
+    }, wifi_interface::Socket, EspWifiInitFor
 };
+use picoserve::{response::{Directory, File}, routing::get_service};
+use embedded_sdmmc::{self, SdCard};
 
 macro_rules! mk_static {
     ($t:ty,$val:expr) => {{
@@ -50,6 +51,7 @@ macro_rules! mk_static {
         x
     }};
 }
+
 
 #[esp_hal_embassy::main]
 async fn main(spawner: Spawner) -> ! {
@@ -100,8 +102,7 @@ async fn main(spawner: Spawner) -> ! {
     spawner.spawn(connection(controller)).ok();
     spawner.spawn(net_task(&stack)).ok();
 
-    let mut rx_buffer = [0; 1536];
-    let mut tx_buffer = [0; 1536];
+    
 
     loop {
         if stack.is_link_up() {
@@ -112,79 +113,33 @@ async fn main(spawner: Spawner) -> ! {
     println!("Connect to the AP `esp-wifi` and point your browser to http://192.168.2.1:8080/");
     println!("Use a static IP in the range 192.168.2.2 .. 192.168.2.255, use gateway 192.168.2.1");
 
-    let mut socket = TcpSocket::new(&stack, &mut rx_buffer, &mut tx_buffer);
-    socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
-    loop {
-        println!("Wait for connection...");
-        let r = socket
-            .accept(IpListenEndpoint {
-                addr: None,
-                port: 8080,
-            })
-            .await;
-        println!("Connected...");
+    // config dma spi
+    let io = Io::new(peripherals.GPIO, peripherals.IO_MUX);
+    let sclk = io.pins.gpio0;
+    let miso = io.pins.gpio2;
+    let mosi = io.pins.gpio4;
+    let cs = io.pins.gpio5;
 
-        if let Err(e) = r {
-            println!("connect error: {:?}", e);
-            continue;
-        }
+    let dma = Dma::new(peripherals.DMA);
 
-        use embedded_io_async::Write;
+    let dma_channel = dma.channel0;
 
-        let mut buffer = [0u8; 1024];
-        let mut pos = 0;
-        loop {
-            match socket.read(&mut buffer).await {
-                Ok(0) => {
-                    println!("read EOF");
-                    break;
-                }
-                Ok(len) => {
-                    let to_print =
-                        unsafe { core::str::from_utf8_unchecked(&buffer[..(pos + len)]) };
+    let (rx_buffer, rx_descriptors, tx_buffer, tx_descriptors) = dma_buffers!(32000);
+    let dma_rx_buf = DmaRxBuf::new(rx_descriptors, rx_buffer).unwrap();
+    let dma_tx_buf = DmaTxBuf::new(tx_descriptors, tx_buffer).unwrap();
+    let mut sd_delay = Delay::new(&clocks);
 
-                    if to_print.contains("\r\n\r\n") {
-                        print!("{}", to_print);
-                        println!();
-                        break;
-                    }
+    let mut sd_spi = Spi::new(peripherals.SPI2, 25u32.MHz(), SpiMode::Mode0, &clocks)
+        .with_pins(Some(sclk), Some(mosi), Some(miso), Some(cs));
 
-                    pos += len;
-                }
-                Err(e) => {
-                    println!("read error: {:?}", e);
-                    break;
-                }
-            };
-        }
+    let sdcard = embedded_sdmmc::sdcard::SdCard::new_with_options(spi, delayer, options);
 
-        let r = socket
-            .write_all(
-                b"HTTP/1.0 200 OK\r\n\r\n\
-            <html>\
-                <body>\
-                    <h1>Hello Rust! Hello esp-wifi!</h1>\
-                </body>\
-            </html>\r\n\
-            ",
-            )
-            .await;
-        if let Err(e) = r {
-            println!("write error: {:?}", e);
-        }
+    spawner.spawn(web_server(&stack));
 
-        let r = socket.flush().await;
-        if let Err(e) = r {
-            println!("flush error: {:?}", e);
-        }
-        Timer::after(Duration::from_millis(1000)).await;
-
-        socket.close();
-        Timer::after(Duration::from_millis(1000)).await;
-
-        socket.abort();
-    }
+    loop {}
+        
 }
+
 
 #[embassy_executor::task]
 async fn connection(mut controller: WifiController<'static>) {
@@ -215,4 +170,53 @@ async fn connection(mut controller: WifiController<'static>) {
 #[embassy_executor::task]
 async fn net_task(stack: &'static Stack<WifiDevice<'static, WifiApDevice>>) {
     stack.run().await
+}
+
+#[embassy_executor::task]
+async fn web_server(stack: &'static Stack<WifiDevice<'_, WifiApDevice>>, sdcard: SdCard<>) {
+    let mut rx_buffer = [0u8; 1536];
+    let mut tx_buffer = [0u8; 1536];
+    let mut socket: TcpSocket<'_> = unsafe { TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer) };
+    socket.set_timeout(Some(embassy_time::Duration::from_secs(10)));
+    println!("Wait for connection...");
+    let r = socket
+        .accept(IpListenEndpoint {
+            addr: None,
+            port: 80,
+        })
+        .await;
+    println!("Connected...");
+
+    // get files from sd card
+    
+
+
+    let app = picoserve::Router::new()
+        .route("/", get_service(File::html()))
+        .nest_service("/static", const {
+            Directory {
+                files: &[("index.css", File::css(include_str!("index.css")))],
+                ..Directory::DEFAULT
+            }
+        },
+        );
+    
+    let piconfig = picoserve::Config::new(picoserve::Timeouts {
+        start_read_request: Some(Duration::from_secs(5)),
+        read_request: Some(Duration::from_secs(1)),
+        write: Some(Duration::from_secs(1)),
+    }).keep_connection_alive();
+
+    match picoserve::serve(&app, &piconfig, &mut [0; 2048], socket).await {
+                    Ok(handled_requests_count) => {
+                        println!(
+                            "{handled_requests_count} requests handled."
+                        )
+                    }
+                    Err(err) => println!("{err:?}"),
+                }
+
+    if let Err(e) = r {
+        println!("connect error: {:?}", e);
+    }
 }
