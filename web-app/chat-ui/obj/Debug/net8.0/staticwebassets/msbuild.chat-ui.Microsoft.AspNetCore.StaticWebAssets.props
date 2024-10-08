@@ -137,7 +137,7 @@
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Alternative</AssetRole>
-      <RelatedAsset>/Users/Cam/flora-GIT/flora-software/web-app/chat-ui/bin/Debug/net8.0/wwwroot/_framework/blazor.webassembly.js</RelatedAsset>
+      <RelatedAsset>C:\Users\c0508083\Documents\GitHub\flora-software\web-app\chat-ui\bin\Debug\net8.0\wwwroot\_framework\blazor.webassembly.js</RelatedAsset>
       <AssetTraitName>Content-Encoding</AssetTraitName>
       <AssetTraitValue>gzip</AssetTraitValue>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

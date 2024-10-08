@@ -2064,11 +2064,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/Cam/flora-GIT/flora-software/web-app/chat-ui/chat-ui.csproj",
+      "projectUniqueName": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj",
       "projectName": "chat-ui",
-      "projectPath": "/Users/Cam/flora-GIT/flora-software/web-app/chat-ui/chat-ui.csproj",
+      "projectPath": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/chat-ui.csproj",
       "packagesPath": "/Users/Cam/.nuget/packages/",
-      "outputPath": "/Users/Cam/flora-GIT/flora-software/web-app/chat-ui/obj/",
+      "outputPath": "/Users/Cam/Documents/flora-git/flora-software/web-app/chat-ui/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/Cam/.nuget/NuGet/NuGet.Config"
@@ -2077,6 +2077,7 @@
         "net8.0"
       ],
       "sources": {
+        "/usr/local/share/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -2144,7 +2145,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.402/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.401/PortableRuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {
