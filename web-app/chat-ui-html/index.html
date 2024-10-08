@@ -1,28 +1,27 @@
 <!DOCTYPE html>
-
-</html>
-
+<html>
 <head>
     <PageTitle>Chat Sample</PageTitle>
     <link rel="stylesheet" href="style.css">
     <script src ="script.js"></script>
 </head>
 
-<body>
-    <h3>Public</h3>
-    <div class="chatContainer">
-        <div class="message">
-            <!-- loop through messages list check if sent or received, timestamp for order and display -->
+    <body onload="openWebSocket()">
+        <h3>Public</h3>
+        <div class="chatContainer">
+            <div class="message">
+                <!-- loop through messages list check if sent or received, timestamp for order and display -->
+            </div>
         </div>
-    </div>
 
-    <div class="inputContainer">
-        <div class="inputSection">
-            <input type = "text" id = "message"></input> 
-            <button class="sendButton" onclick = "sendMessage()">Send</button>
+        <div class="inputContainer">
+            <div class="inputSection">
+                <input type = "text" id = "message"></input> 
+                <button class="sendButton" onclick = "sendMessage()">Send</button>
+            </div>
+            <button class="sosButton" onclick="showModal">SOS</button>
         </div>
-        <button class="sosButton" onclick="showModal">SOS</button>
-    </div>
 
-    <SosModal IsVisible="isVisible" HideModal="hideModal" />
-</body>
+        <SosModal IsVisible="isVisible" HideModal="hideModal" />
+    </body>
+</html>
