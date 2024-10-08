@@ -1,4 +1,4 @@
-// create a message object that can store the message, time it was sent, and the user who sent it by IP address
+
 class Message {
     constructor(content, user) {
         this.content = content;
@@ -6,14 +6,6 @@ class Message {
         this.user = user;
     }
 }
-
-// Example usage:
-let userIP = '192.168.1.1';  // Replace with actual user IP
-let message = new Message('Hello, world!', userIP);
-console.log(message);
-
-
-
 let messages = [];
 let socket;
 
