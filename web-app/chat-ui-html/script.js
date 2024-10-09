@@ -1,47 +1,50 @@
 class Message {
-    constructor(content, user) {
+    constructor(content) {
         this.messageContent = content;
-        this.timestamp = new Date().toISOString();
-        this.userIp = user;
+        //this.timestamp = new Date().toISOString();
+        this.sent = 0;
+        this.serverAck = 0;
     }
 }
 
-class chatHandler {
-    constructor(userIp){
-        this.userIp = userIp;
-        let messageHistory = [];
+class ChatHandler {
+    constructor() {
+        this.messageHistory = [];  
     }
 
     sendMessage() {
         const inputElement = document.getElementById("messageInput");
         const messageContent = inputElement.value; 
-        const trimmedContent = messageContent.trim(); // Trimmed content for validation    
+        const trimmedContent = messageContent.trim();
     
         // Check if the message content is not empty
         if (trimmedContent !== "") {
-            const userIP = "192.168.0.100"; // Placeholder IP, maybe need to find another method ID'ing user
-            const newMessage = new Message(messageContent, userIP);
-            inputElement.value = "";
+            const newMessage = new Message(messageContent);  
+            newMessage.sent = 1;
+            newMessage.serverAck = 0;
+            inputElement.value = "";    
             console.log(newMessage); 
-            sendMessageToServer(newMessage);
+            this.sendMessageToServer(newMessage); 
         }
     }
 
     receiveMessage(event) {
         const messageObject = JSON.parse(event.data);
-        messageHistory.push(messageObject); 
+        this.messageHistory.push(messageObject); 
+        
         // Sort messages by timestamp
-        messagesHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        updateChatContainer(messageObject);
+        this.messageHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        
+        this.updateChatContainer(messageObject); 
     }
 
-    updateChatContainer(message){ // I dont think this works yet
+    updateChatContainer(message) { 
         const chatContainer = document.getElementById("chatContainer");
         const newMessageElement = document.createElement("div");
         newMessageElement.className = "message";
         newMessageElement.innerText = message.messageContent;
         chatContainer.appendChild(newMessageElement);
-        chatContainer.scrollTop = chatContainer.scrollHeight;  
+        chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
     }
     
     sendMessageToServer(messageObject) {
@@ -56,8 +59,7 @@ class chatHandler {
 }
 
 // Globals
-const userIp = '192.168.0.100'; // *Placeholder* Maybe find another way to ID users
-const publicChatHandler = new ChatHandler(userIp); 
+const publicChatHandler = new ChatHandler();  
 let socket;
 
 function openWebSocket() {
