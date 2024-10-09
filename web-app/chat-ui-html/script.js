@@ -61,7 +61,7 @@ const publicChatHandler = new ChatHandler(userIp);
 let socket;
 
 function openWebSocket() {
-    socket = new WebSocket('ws://localhost:8080');  // change to esp32 IP address
+    socket = new WebSocket('ws://localhost:8080');  // change to DNS URL once setup
     socket.onopen = function(event) {
         console.log('WebSocket is connected.');
     };
