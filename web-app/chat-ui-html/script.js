@@ -6,7 +6,7 @@ class Message {
         this.userIp = user;
     }
 }
-let messages = [];
+let messageHistory = [];
 let socket;
 
 function openWebSocket() {
@@ -16,7 +16,7 @@ function openWebSocket() {
     };
     socket.onmessage = function(event) {
         let message = event.data;
-        updateChat(message);
+        receiveMessage();
     };
     socket.onclose = function(event) {
         console.log('WebSocket is closed.');
@@ -26,8 +26,7 @@ function openWebSocket() {
     };
 }
 
-function updateChat(message)
-{
+function updateChatContainer(message){
     let chatContainer = document.getElementById("chat-container");
     let messageElement = document.createElement("div");
     messageElement.innerHTML = message;
@@ -48,9 +47,7 @@ function sendMessage() {
         sendMessageToServer(newMessage);
     }
 }
-
-// Function to send a message through the WebSocket using the Message object
-function sendMessageToWebSocket(messageObject) {
+function sendMessageToServer(messageObject) {
     if (socket && socket.readyState === WebSocket.OPEN) { // Ensure the socket is open
         // Convert the Message object to JSON and send it
         socket.send(JSON.stringify(messageObject)); 
@@ -59,6 +56,18 @@ function sendMessageToWebSocket(messageObject) {
         console.log('WebSocket is not connected. Message not sent.');
     }
 }
+
+function receiveMessage(event) {
+    const messageObject = JSON.parse(event.data);
+    messageHistory.push(messageObject); 
+    updateChatContainer(messageObject);
+}
+
+
+
+
+
+
     
 
 
