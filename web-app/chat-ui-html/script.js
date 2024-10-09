@@ -27,10 +27,12 @@ function openWebSocket() {
 }
 
 function updateChatContainer(message){
-    let chatContainer = document.getElementById("chat-container");
-    let messageElement = document.createElement("div");
-    messageElement.innerHTML = message;
-    chatContainer.appendChild(messageElement);
+    const chatContainer = document.getElementById("chatContainer");
+    const newMessageElement = document.createElement("div");
+    newMessageElement.className = "message";
+    newMessageElement.innerText = message.messageContent;
+    chatContainer.appendChild(newMessageElement);
+    chatContainer.scrollTop = chatContainer.scrollHeight;  
 }
 
 function sendMessage() {
@@ -60,6 +62,8 @@ function sendMessageToServer(messageObject) {
 function receiveMessage(event) {
     const messageObject = JSON.parse(event.data);
     messageHistory.push(messageObject); 
+    // Sort messages by timestamp
+    messagesHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     updateChatContainer(messageObject);
 }
 
