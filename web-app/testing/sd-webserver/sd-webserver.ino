@@ -1,9 +1,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
-#include <SD.h>  
-#include <esp_task_wdt.h>
+#include <SD.h>
 #include <ESPmDNS.h>
-#include <USB.h>
 
 const char *ssid = "AVAlink";
 
@@ -19,30 +17,30 @@ int mosi = 11;
 AsyncWebServer server(80);
 
 void setup() {
-    Serial.begin(115200);
+  Serial.begin(115200);
 
-    // Set up Wi-Fi (AP mode)
-    Serial.println("Setting up Access Point with SSID: ");
-    if (WiFi.softAP(ssid)) {
-        Serial.println("Access Point setup complete");
-    } else {
-        Serial.println("Failed to set up Access Point");
-    }
+  // Set up Wi-Fi (AP mode)
+  Serial.println("Setting up Access Point with SSID: ");
+  if (WiFi.softAP(ssid)) {
+      Serial.println("Access Point setup complete");
+  } else {
+      Serial.println("Failed to set up Access Point");
+  }
 
-    Serial.println("Access Point IP address: ");
-    Serial.println(WiFi.softAPIP());
+  Serial.println("Access Point IP address: ");
+  Serial.println(WiFi.softAPIP());
 
-    // Initialize the SD card
-    Serial.println("Initializing SD card...");
-    if (!SD.begin(SD_CS_PIN)) {
-        Serial.println("Failed to mount SD card!");
-        return;
-    } else {
-        Serial.println("SD card mounted successfully.");
-    }
+  // Initialize the SD card
+  Serial.println("Initializing SD card...");
+  if (!SD.begin(SD_CS_PIN)) {
+      Serial.println("Failed to mount SD card!");
+      return;
+  } else {
+      Serial.println("SD card mounted successfully.");
+  }
 
-    // Serve files from the SD card
-    server.serveStatic("/", SD, "/").setDefaultFile("index.html");
+  // Serve files from the SD card
+  server.serveStatic("/", SD, "/").setDefaultFile("index.html");
 
      // Set up mDNS responder:
     // - first argument is the domain name, in this example
@@ -61,6 +59,8 @@ void setup() {
     server.begin();
     Serial.println("Server started");
     MDNS.addService("http", "tcp", 80);
+
+
 }
 
 
