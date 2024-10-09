@@ -48,6 +48,17 @@ function sendMessage() {
         sendMessageToServer(newMessage);
     }
 }
+
+// Function to send a message through the WebSocket using the Message object
+function sendMessageToWebSocket(messageObject) {
+    if (socket && socket.readyState === WebSocket.OPEN) { // Ensure the socket is open
+        // Convert the Message object to JSON and send it
+        socket.send(JSON.stringify(messageObject)); 
+        console.log('Message sent:', messageObject); // Log the sent message for debugging
+    } else {
+        console.log('WebSocket is not connected. Message not sent.');
+    }
+}
     
 
 
