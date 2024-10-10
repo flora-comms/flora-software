@@ -61,10 +61,10 @@ Send a chat from client to rest of network
 
 ### Server side
 
-1. Deserialize
-2. Send payload over LoRa
-3. Store message in volatile memory
-4. Acknowledge (send ACK)
+1. Deserialize & timestamp
+2. Put into Tx queue for LoRa
+3. Store message in volatile memory for writing to sd card
+4. Acknowledge client (send ACK)
 
 ## MsgRecv - server initiated
 
