@@ -1,8 +1,10 @@
+
+
 class Message {
     constructor(content) {
-        this.messageContent = content;
-        this.sent = 0;
-        this.serverAck = 0;
+        this.Payload = content;
+        this.NodeID = nodeID;  
+        this.Ack = 0;
     }
 }
 
@@ -13,14 +15,13 @@ class ChatHandler {
 
     sendMessage() {
         const inputElement = document.getElementById("messageInput");
-        const messageContent = inputElement.value; 
-        const trimmedContent = messageContent.trim();
+        const Payload = inputElement.value; 
+        const trimmedContent = Payload.trim();
     
         // Check if the message content is not empty
         if (trimmedContent !== "") {
-            const newMessage = new Message(messageContent);  
-            newMessage.sent = 1;
-            newMessage.serverAck = 0;
+            const newMessage = new Message(Payload);  
+            newMessage.Ack = 0;
             inputElement.value = "";    
             console.log(newMessage); 
             this.sendMessageToServer(newMessage); 
@@ -30,10 +31,8 @@ class ChatHandler {
     receiveMessage(event) {
         const messageObject = JSON.parse(event.data);
         this.messageHistory.push(messageObject); 
-        
-        // Sort messages by timestamp
-        this.messageHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        
+        console.log('Received message object:', messageObject);
+        // Add Acknowledgement logic here
         this.updateChatContainer(messageObject); 
     }
 
@@ -41,7 +40,7 @@ class ChatHandler {
         const chatContainer = document.getElementById("chatContainer");
         const newMessageElement = document.createElement("div");
         newMessageElement.className = "message";
-        newMessageElement.innerText = message.messageContent;
+        newMessageElement.innerText = message.Payload;
         chatContainer.appendChild(newMessageElement);
         chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
     }
@@ -50,14 +49,15 @@ class ChatHandler {
         if (socket && socket.readyState === WebSocket.OPEN) { // Ensure the socket is open
             // Convert the Message object to JSON and send it
             socket.send(JSON.stringify(messageObject)); 
-            console.log('Message sent:', messageObject); // Log the sent message for debugging
+            console.log('Message NodeID:', messageObject); // Log the NodeID message for debugging
         } else {
-            console.log('WebSocket is not connected. Message not sent.');
+            console.log('WebSocket is not connected. Message not NodeID.');
         }
     }
 }
 
 // Globals
+const nodeID = 0x00;
 const publicChatHandler = new ChatHandler();  
 let socket;
 
