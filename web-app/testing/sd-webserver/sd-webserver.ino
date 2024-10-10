@@ -3,8 +3,6 @@
 #include <SD.h>
 #include <ESPmDNS.h>
 
-const char *ssid = "AVAlink";
-
 // SD card CS (Chip Select) pin
 #define SD_CS_PIN 13
 
@@ -13,9 +11,21 @@ int sck = 14;
 int miso = 2;
 int mosi = 11;
 
+
+// ------------- GLOBALS ---------------- //
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
+AsyncWebSocket ws("/");
 
+// WiFi SSID
+const char *ssid = "AVAlink";
+
+// ------------- PROTOTYPES ---------------//
+
+// web socket event handler
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len);
+
+// ---------------- MAIN -----------------//
 void setup() {
   Serial.begin(115200);
 
@@ -55,6 +65,9 @@ void setup() {
     }
     Serial.println("mDNS responder started");
 
+
+    ws.onEvent(onWsEvent);
+    server.addHandler(&ws);
     // Start the server
     server.begin();
     Serial.println("Server started");
@@ -67,3 +80,32 @@ void setup() {
 void loop() {
     //nothing nothing nothing 
 }
+
+// ------------------ DEFINITIONS ------------------ //
+
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+  
+  if(type == WS_EVT_CONNECT){
+  
+    Serial.println("Websocket client connection received");
+     
+  } else if(type == WS_EVT_DISCONNECT){
+ 
+    Serial.println("Client disconnected");
+  
+  } else if(type == WS_EVT_DATA){
+  
+    ws.textAll(data, len);
+ 
+    Serial.print("Data received: ");
+  
+    for(int i=0; i < len; i++) {
+          Serial.print((char) data[i]);
+    }
+  
+    Serial.println();
+  }
+}
+  
+
+
