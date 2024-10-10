@@ -3,7 +3,7 @@
 class Message {
     constructor(content) {
         this.Payload = content;
-        this.NodeID = nodeID;  
+        this.NodeID = myNodeID;  
     }
 }
 
@@ -57,6 +57,7 @@ class ChatHandler {
 }
 
 // Globals
+const maxMessageLength = 255;
 const myNodeID = 0x00;
 const publicChatHandler = new ChatHandler();  
 let socket;

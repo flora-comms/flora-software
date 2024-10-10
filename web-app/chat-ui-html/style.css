@@ -1,4 +1,78 @@
 /* Chat Styling */
+.chatContainer, .inputContainer {
+    max-width: 90vw;
+    margin: 10px auto 0;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #b4b2b2;
+    box-sizing: border-box;
+}
+.chatContainer {
+    height: 80vw;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.inputContainer {
+    display: flex;
+    justify-content: center;
+    background-color: #D3D3D3;
+    flex-direction: column; /* Make everything stack vertically */
+    gap: 10px; /* Add spacing between sections */
+}
+
+
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+.message.received {
+    background-color: #0084ff;
+    color:white;
+    align-self: flex-start;
+}
+.message.sent {
+    background-color: #28a745;
+    color: white;
+    align-self: flex-end;
+}
+
+
+.inputSection {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Align button with the input field */
+}
+input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+}
+.sendButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.sosButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #e65e38;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Make SOS button full width */
+}
+
+
 .modal {
   display: none;
   position: fixed;
@@ -10,7 +84,6 @@
   overflow: auto;
   background-color: rgba(0,0,0,0.4);
 }
-
 .modal-content {
   background-color: #fefefe;
   margin: 15% auto;
@@ -18,92 +91,9 @@
   border: 1px solid #888;
   width: 90%; /* Adjusted to fit smaller screens */
 }
-
 .close {
   color: #aaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
-}
-
-.chatContainer {
-    width: 100%; 
-    max-width: 90vw; 
-    height: 60vh; /* Adjusted to fit dynamically */
-    margin: 0 auto; 
-    overflow-y: auto; 
-    border: 1px solid #b4b2b2; 
-    padding: 10px; 
-    box-sizing: border-box; 
-    background-color: #f9f9f9; 
-    display: flex;
-    flex-direction: column; 
-    gap: 10px; 
-    border-radius: 5px;
-}
-
-.message {
-    padding: 10px 15px;
-    border-radius: 15px;
-    max-width: 70%;
-    word-wrap: break-word;
-}
-
-.message.received {
-    background-color: #0084ff;
-    color:white;
-    align-self: flex-start;
-}
-
-.message.sent {
-    background-color: #28a745;
-    color: white;
-    align-self: flex-end;
-}
-
-.inputContainer {
-    display: flex;
-    justify-content: center;
-    max-width: 90vw;
-    margin: 10px auto 0;
-    background-color: #D3D3D3;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #b4b2b2;
-    flex-direction: column; /* Make everything stack vertically */
-    gap: 10px; /* Add spacing between sections */
-}
-
-.inputSection {
-    display: flex;
-    gap: 10px;
-    align-items: center; /* Align button with the input field */
-}
-
-input {
-    flex: 1;
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-}
-
-.sendButton {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.sosButton {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #e65e38;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%; /* Make SOS button full width */
 }
