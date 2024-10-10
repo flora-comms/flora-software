@@ -1,7 +1,6 @@
 class Message {
     constructor(content) {
         this.messageContent = content;
-        //this.timestamp = new Date().toISOString();
         this.sent = 0;
         this.serverAck = 0;
     }
@@ -68,8 +67,7 @@ function openWebSocket() {
         console.log('WebSocket is connected.');
     };
     socket.onmessage = function(event) {
-        let message = event.data;
-        publicChatHandler.receiveMessage();
+        publicChatHandler.receiveMessage(event);
     };
     socket.onclose = function(event) {
         console.log('WebSocket is closed.');
