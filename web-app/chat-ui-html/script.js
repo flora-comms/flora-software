@@ -44,7 +44,7 @@ class ChatHandler {
         newMessageElement.className = "message";
     
         // Check the nodeID to determine if the message is sent or received
-        if (message.NodeID === 0) {
+        if (message.NodeID === myNodeID) {
             newMessageElement.classList.add("sent");
         } else {
             newMessageElement.classList.add("received");
@@ -57,7 +57,7 @@ class ChatHandler {
 }
 
 // Globals
-const nodeID = 0x00;
+const myNodeID = 0x00;
 const publicChatHandler = new ChatHandler();  
 let socket;
 
