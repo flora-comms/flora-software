@@ -4,7 +4,6 @@ class Message {
     constructor(content) {
         this.Payload = content;
         this.NodeID = nodeID;  
-        this.Ack = 0;
     }
 }
 
@@ -22,7 +21,6 @@ class ChatHandler {
         // Check if the message content is not empty
             if (trimmedContent !== "") {
                 const newMessage = new Message(Payload);  
-                newMessage.Ack = 0;
                 inputElement.value = "";    
                 console.log(newMessage);
                 socket.send(JSON.stringify(newMessage)); 
@@ -44,6 +42,14 @@ class ChatHandler {
         const chatContainer = document.getElementById("chatContainer");
         const newMessageElement = document.createElement("div");
         newMessageElement.className = "message";
+    
+        // Check the nodeID to determine if the message is sent or received
+        if (message.NodeID === 0) {
+            newMessageElement.classList.add("sent");
+        } else {
+            newMessageElement.classList.add("received");
+        }
+    
         newMessageElement.innerText = message.Payload;
         chatContainer.appendChild(newMessageElement);
         chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
