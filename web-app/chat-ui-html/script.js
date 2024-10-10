@@ -17,15 +17,19 @@ class ChatHandler {
         const inputElement = document.getElementById("messageInput");
         const Payload = inputElement.value; 
         const trimmedContent = Payload.trim();
-    
+
+        if (socket && socket.readyState === WebSocket.OPEN) { // Ensure the socket is open
         // Check if the message content is not empty
-        if (trimmedContent !== "") {
-            const newMessage = new Message(Payload);  
-            newMessage.Ack = 0;
-            inputElement.value = "";    
-            console.log(newMessage); 
-            this.sendMessageToServer(newMessage); 
-        }
+            if (trimmedContent !== "") {
+                const newMessage = new Message(Payload);  
+                newMessage.Ack = 0;
+                inputElement.value = "";    
+                console.log(newMessage);
+                socket.send(JSON.stringify(newMessage)); 
+            }
+        } else {
+        console.log('WebSocket is not connected. Message not NodeID.');
+    }
     }
 
     receiveMessage(event) {
@@ -43,16 +47,6 @@ class ChatHandler {
         newMessageElement.innerText = message.Payload;
         chatContainer.appendChild(newMessageElement);
         chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
-    }
-    
-    sendMessageToServer(messageObject) {
-        if (socket && socket.readyState === WebSocket.OPEN) { // Ensure the socket is open
-            // Convert the Message object to JSON and send it
-            socket.send(JSON.stringify(messageObject)); 
-            console.log('Message NodeID:', messageObject); // Log the NodeID message for debugging
-        } else {
-            console.log('WebSocket is not connected. Message not NodeID.');
-        }
     }
 }
 
