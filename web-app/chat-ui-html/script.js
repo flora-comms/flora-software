@@ -63,7 +63,7 @@ const publicChatHandler = new ChatHandler();
 let socket;
 
 function openWebSocket() {
-    socket = new WebSocket('ws://localhost:8080');  // change to DNS URL once setup
+    socket = new WebSocket('ws://avalink.local/chat');  // change to DNS URL once setup
     socket.onopen = function(event) {
         console.log('WebSocket is connected.');
     };
