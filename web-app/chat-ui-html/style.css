@@ -1,6 +1,13 @@
 /* Chat Styling */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure body takes up the full height of the viewport */
+    margin: 0;
+}
+
 .chatContainer, .inputContainer {
-    max-width: 90vw;
+    min-width: 90vw;
     margin: 10px auto 0;
     padding: 10px;
     border-radius: 5px;
@@ -8,20 +15,20 @@
     box-sizing: border-box;
 }
 .chatContainer {
-    height: 80vw;
+    flex-grow: 1; /* Allow chat container to grow and take remaining space */
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto; /* Enable vertical scrolling for chat */
 }
 .inputContainer {
+    background-color: #D3D3D3;
     display: flex;
     justify-content: center;
-    background-color: #D3D3D3;
-    flex-direction: column; /* Make everything stack vertically */
-    gap: 10px; /* Add spacing between sections */
+    flex-direction: column;
+    gap: 10px;
 }
-
 
 .message {
     padding: 10px 15px;
