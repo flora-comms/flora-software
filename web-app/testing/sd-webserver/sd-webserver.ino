@@ -15,7 +15,7 @@ int mosi = 11;
 // ------------- GLOBALS ---------------- //
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
-AsyncWebSocket ws("/");
+AsyncWebSocket ws("/chat");
 
 // WiFi SSID
 const char *ssid = "AVAlink";
@@ -82,7 +82,6 @@ void loop() {
 }
 
 // ------------------ DEFINITIONS ------------------ //
-
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
   
   if(type == WS_EVT_CONNECT){
@@ -106,6 +105,5 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     Serial.println();
   }
 }
-  
 
 

@@ -10,7 +10,8 @@ JSON strings used for comms and control
 
 {
     Type: "Msg"
-    Payload: char[254]
+    Payload: char[255] (254 chars plus \0)
+    Timestamp: char[29] ("DAY MTH HR:MN:SC YEAR GMT\0")
     NodeID: byte
 }
 
