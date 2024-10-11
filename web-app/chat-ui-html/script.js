@@ -34,7 +34,6 @@ class ChatHandler {
         const messageObject = JSON.parse(event.data);
         this.messageHistory.push(messageObject); 
         console.log('Received message object:', messageObject);
-        // Add Acknowledgement logic here
         this.updateChatContainer(messageObject); 
     }
 
@@ -63,7 +62,7 @@ const publicChatHandler = new ChatHandler();
 let socket;
 
 function openWebSocket() {
-    socket = new WebSocket('ws://avalink.local/chat');  // change to DNS URL once setup
+    socket = new WebSocket('ws://localhost:8080');  // change to DNS URL once setup
     socket.onopen = function(event) {
         console.log('WebSocket is connected.');
     };
@@ -77,6 +76,13 @@ function openWebSocket() {
         console.log('WebSocket error: ' + error.message);
     };
 }
+
+
+
+
+
+
+
 
 
 

@@ -18,9 +18,20 @@ JSON strings used for comms and control
 ## Message History
 
 {
-    Type: "History"
-    Offset: byte // how many messages back you want (eg. previous 0-9 messages offset is 0, 10-19 is 1, 20-29 is 2, etc..)
-}
+    "Type": "History",
+        "Messages": [
+         {
+             "Type": "Msg",
+             "Payload": "Hello, world!",
+             "NodeID": "Node_1"
+         },
+         {
+             "Type": "Msg",
+             "Payload": "How are you?",
+             "NodeID": "Node_2"
+         },
+     ]
+} 
 
 ## ACK
 
