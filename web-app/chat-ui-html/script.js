@@ -30,6 +30,11 @@ class ChatHandler {
     }
     }
 
+    parseHistory()
+    {
+        fetch("./history.json")
+    }
+
     receiveMessage(event) {
         const messageObject = JSON.parse(event.data);
         this.messageHistory.push(messageObject); 
