@@ -17,7 +17,8 @@ class ChatHandler {
         .then(data => {
           if (data.Type === 'History' && Array.isArray(data.Messages)) {
             data.Messages.forEach(message => {
-              this.updateChatContainer(message);  // Call the function to display the message
+              this.updateChatContainer(
+                  message);  // Call the function to display the message
             });
           } else {
             console.error('Invalid message history structure.');
@@ -80,7 +81,7 @@ let socket;
 
 function openWebSocket() {
   socket =
-      new WebSocket('ws://localhost:8080');  // change to DNS URL once setup
+      new WebSocket('ws://192.168.1.69:8080');  // change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
     publicChatHandler.parseHistory('history.JSON');
