@@ -11,6 +11,20 @@ class ChatHandler {
     constructor() {
         this.messageHistory = [];  
     }
+    parseHistory(file) {
+        fetch(file)
+            .then(response => response.json())
+            .then(data => {
+                if (data.Type === "History" && Array.isArray(data.Messages)) {
+                    data.Messages.forEach(message => {
+                        this.updateChatContainer(message);  // Call the function to display the message
+                    });
+                } else {
+                    console.error('Invalid message history structure.');
+                }
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+    }
 
     sendMessage() {
         const inputElement = document.getElementById("messageInput");
@@ -28,11 +42,6 @@ class ChatHandler {
         } else {
         console.log('WebSocket is not connected. Message not NodeID.');
     }
-    }
-
-    parseHistory()
-    {
-        fetch("./history.json")
     }
 
     receiveMessage(event) {
@@ -70,6 +79,7 @@ function openWebSocket() {
     socket = new WebSocket('ws://localhost:8080');  // change to DNS URL once setup
     socket.onopen = function(event) {
         console.log('WebSocket is connected.');
+        publicChatHandler.parseHistory('history.JSON');
     };
     socket.onmessage = function(event) {
         publicChatHandler.receiveMessage(event);

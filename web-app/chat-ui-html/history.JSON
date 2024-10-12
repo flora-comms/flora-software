@@ -4,62 +4,48 @@
          {
              "Type": "Msg",
              "Payload": "Hello, world!",
-             "NodeID": "Node_1"
+             "NodeID": 0
          },
          {
              "Type": "Msg",
              "Payload": "How are you?",
-             "NodeID": "Node_2"
+             "NodeID": 1
          },
          {
             "Type": "Msg",
             "Payload": "Hello, world!",
-            "NodeID": "Node_1"
+            "NodeID": 1
         },
         {
             "Type": "Msg",
             "Payload": "How are you?",
-            "NodeID": "Node_2"
+            "NodeID": 1
         },
         {
             "Type": "Msg",
             "Payload": "This is a test message.",
-            "NodeID": "Node_0"
+            "NodeID": 0
         },
         {
             "Type": "Msg",
             "Payload": "Another message from Node 1.",
-            "NodeID": "Node_1"
+            "NodeID": 1
         },
         {
             "Type": "Msg",
             "Payload": "Yet another message.",
-            "NodeID": "Node_0"
+            "NodeID": 0
         },
         {
             "Type": "Msg",
             "Payload": "Node 1 checking in.",
-            "NodeID": "Node_1"
+            "NodeID": 1
         },
         {
             "Type": "Msg",
             "Payload": "Message from Node 0.",
-            "NodeID": "Node_0"
-        },
-        {
-            "Type": "Msg",
-            "Payload": "Node 1 here again.",
-            "NodeID": "Node_1"
-        },
-        {
-            "Type": "Msg",
-            "Payload": "Final message from Node 0.",
-            "NodeID": "Node_0"
-        },
-        {
-            "Type": "Msg",
-            "Payload": "Final message from Node 1.",
-            "NodeID": "Node_1"
+            "NodeID": 0
         }
+
      ]
 } 
