@@ -47,6 +47,10 @@ body {
     background-color: #fff;
     border: 2px solid #898989;
     border-radius: 10px;
+    gap: 2px;
+
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
 }
 .inputContainer {
     flex: 0 0 15%; /* 30% height */

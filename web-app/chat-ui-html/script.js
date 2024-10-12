@@ -17,8 +17,7 @@ class ChatHandler {
         .then(data => {
           if (data.Type === 'History' && Array.isArray(data.Messages)) {
             data.Messages.forEach(message => {
-              this.updateChatContainer(
-                  message);  // Call the function to display the message
+              this.updateChatContainer(message);  // Call the function to display the message
             });
           } else {
             console.error('Invalid message history structure.');
