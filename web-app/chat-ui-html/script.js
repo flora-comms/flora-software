@@ -37,7 +37,7 @@ class ChatHandler {
                 const newMessage = new Message(Payload);  
                 inputElement.value = "";    
                 console.log(newMessage);
-                socket.send(JSON.stringify(newMessage)); 
+                socket.send(JSON.stringify(newMessage)); //
             }
         } else {
         console.log('WebSocket is not connected. Message not NodeID.');
