@@ -11,16 +11,27 @@ JSON strings used for comms and control
 {
     Type: "Msg"
     Payload: char[255] (254 chars plus \0)
-    Timestamp: char[29] ("DAY MTH HR:MN:SC YEAR GMT\0")
     NodeID: byte
 }
 
 ## Message History
+file name: history.JSON
 
 {
-    Type: "History"
-    Offset: byte // how many messages back you want (eg. previous 0-9 messages offset is 0, 10-19 is 1, 20-29 is 2, etc..)
-}
+    "Type": "History",
+        "Messages": [
+         {
+             "Type": "Msg",
+             "Payload": "Hello, world!",
+             "NodeID": 0
+         },
+         {
+             "Type": "Msg",
+             "Payload": "How are you?",
+             "NodeID": 1
+         },
+     ]
+} 
 
 ## ACK
 
