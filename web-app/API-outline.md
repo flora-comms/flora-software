@@ -11,11 +11,11 @@ JSON strings used for comms and control
 {
     Type: "Msg"
     Payload: char[255] (254 chars plus \0)
-    Timestamp: char[29] ("DAY MTH HR:MN:SC YEAR GMT\0")
     NodeID: byte
 }
 
 ## Message History
+file name: history.JSON
 
 {
     "Type": "History",
@@ -23,12 +23,13 @@ JSON strings used for comms and control
          {
              "Type": "Msg",
              "Payload": "Hello, world!",
-             "NodeID": "Node_1"
+             "NodeID": 1
          },
          {
              "Type": "Msg",
              "Payload": "How are you?",
-             "NodeID": "Node_2"
+             "NodeID": 0
+
          },
      ]
 } 
