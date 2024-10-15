@@ -23,12 +23,13 @@ file name: history.JSON
          {
              "Type": "Msg",
              "Payload": "Hello, world!",
-             "NodeID": 0
+             "NodeID": 1
          },
          {
              "Type": "Msg",
              "Payload": "How are you?",
-             "NodeID": 1
+             "NodeID": 0
+
          },
      ]
 } 
