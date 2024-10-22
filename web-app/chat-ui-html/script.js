@@ -31,7 +31,7 @@ class ChatHandler {
     .then(response => response.json())
     .then(data => {
       nodeTable = data;  
-      console.log("Data fetched and stored:", jsonData); 
+      console.log("Data fetched and stored:", nodeTable); 
     })
     .catch(error => console.error('Error fetching the file:', error));
   }
