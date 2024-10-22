@@ -1,7 +1,7 @@
 class Message {
   constructor(content) {
     this.Payload = content;
-    this.NodeID = myNodeID;
+    this.NodeID = myNodeID;  // myNodeID will be set after lookupNodes()
   }
 }
 
@@ -9,14 +9,14 @@ class ChatHandler {
   constructor() {
     this.messageHistory = [];
   }
+
   parseHistory(file) {
     fetch(file)
         .then(response => response.json())
         .then(data => {
           if (data.Type === 'History' && Array.isArray(data.Messages)) {
             data.Messages.forEach(message => {
-              this.updateChatContainer(
-                  message);  // Call the function to display the message
+              this.updateChatContainer(message);  // Call the function to display the message
             });
           } else {
             console.error('Invalid message history structure.');
@@ -25,13 +25,19 @@ class ChatHandler {
         .catch(error => console.error('Error loading JSON:', error));
   }
 
-  lookupNodes(file)
-  {
+  lookupNodes(file, callback) {  // Add callback for synchronization
     fetch(file)
     .then(response => response.json())
     .then(data => {
       nodeTable = data;  
       console.log("Data fetched and stored:", nodeTable); 
+
+      myNodeID = nodeTable.nodeTable[0];  // Set myNodeID after nodeTable is fetched
+      document.getElementById('nodeIDDisplay').textContent = myNodeID;
+
+      if (callback) {
+        callback();  // Call the callback to proceed after lookupNodes is done
+      }
     })
     .catch(error => console.error('Error fetching the file:', error));
   }
@@ -41,17 +47,15 @@ class ChatHandler {
     const Payload = inputElement.value;
     const trimmedContent = Payload.trim();
 
-    if (socket &&
-        socket.readyState === WebSocket.OPEN) {  // Ensure the socket is open
-      // Check if the message content is not empty
+    if (socket && socket.readyState === WebSocket.OPEN) {
       if (trimmedContent !== '') {
         const newMessage = new Message(Payload);
         inputElement.value = '';
         console.log(newMessage);
-        socket.send(JSON.stringify(newMessage));  //
+        socket.send(JSON.stringify(newMessage));
       }
     } else {
-      console.log('WebSocket is not connected. Message not NodeID.');
+      console.log('WebSocket is not connected.');
     }
   }
 
@@ -67,42 +71,49 @@ class ChatHandler {
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
-    // Check the nodeID to determine if the message is sent or received
+    console.log("message.NodeID:", message.NodeID);
+    console.log("Type of message.NodeID:", typeof message.NodeID);
+    console.log("myNodeID:", myNodeID);
+    console.log("Type of myNodeID:", typeof myNodeID);
+    
+
     if (nodeTable[message.NodeID] === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
-      const senderNode = nodeTable[message.NodeID]
       newMessageElement.classList.add('received');
     }
 
     newMessageElement.innerText = message.Payload;
     chatContainer.appendChild(newMessageElement);
-    chatContainer.scrollTop =
-        chatContainer.scrollHeight;  // Scroll to the bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
   }
 }
 
 // Globals
 let nodeTable = null;
-const myNodeID = nodeTable[0];
-document.getElementById('nodeIDDisplay').textContent = myNodeID;
+let myNodeID = null;  
 const publicChatHandler = new ChatHandler();
 let socket;
 
 function openWebSocket() {
-  socket =
-      new WebSocket('ws://avalink.local/chat');  // change to DNS URL once setup
+  socket = new WebSocket('ws://localhost:8080');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
-    publicChatHandler.lookupNodes('lookup.JSON');
+
+    // Fetch the nodeTable first, then fetch history
+    publicChatHandler.lookupNodes('lookup.JSON', () => {
     publicChatHandler.parseHistory('history.JSON');
+    });
   };
+
   socket.onmessage = function(event) {
     publicChatHandler.receiveMessage(event);
   };
+
   socket.onclose = function(event) {
     console.log('WebSocket is closed.');
   };
+
   socket.onerror = function(error) {
     console.log('WebSocket error: ' + error.message);
   };

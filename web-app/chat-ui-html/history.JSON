@@ -4,12 +4,12 @@
          {
              "Type": "Msg",
              "Payload": "Hello, world!",
-             "NodeID": 0
+             "NodeID": 5
          },
          {
              "Type": "Msg",
              "Payload": "How are you?",
-             "NodeID": 1
+             "NodeID": 5
          },
          {
             "Type": "Msg",
@@ -24,12 +24,12 @@
         {
             "Type": "Msg",
             "Payload": "This is a test message.",
-            "NodeID": 0
+            "NodeID": 5
         },
         {
             "Type": "Msg",
-            "Payload": "Another message from Node 1.",
-            "NodeID": 1
+            "Payload": "Another message from Node 5.",
+            "NodeID": 5
         },
         {
             "Type": "Msg",
@@ -38,14 +38,13 @@
         },
         {
             "Type": "Msg",
-            "Payload": "Node 1 checking in.",
-            "NodeID": 1
+            "Payload": "Node 3 checking in.",
+            "NodeID": 3
         },
         {
             "Type": "Msg",
-            "Payload": "Message from Node 0.",
-            "NodeID": 0
+            "Payload": "Message from Node 2.",
+            "NodeID": 2
         }
-
      ]
 } 
