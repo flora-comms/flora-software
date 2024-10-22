@@ -1,5 +1,3 @@
-
-
 class Message {
   constructor(content) {
     this.Payload = content;
@@ -25,6 +23,17 @@ class ChatHandler {
           }
         })
         .catch(error => console.error('Error loading JSON:', error));
+  }
+
+  lookupNodes(file)
+  {
+    fetch(file)
+    .then(response => response.json())
+    .then(data => {
+      nodeTable = data;  
+      console.log("Data fetched and stored:", jsonData); 
+    })
+    .catch(error => console.error('Error fetching the file:', error));
   }
 
   sendMessage() {
@@ -59,9 +68,10 @@ class ChatHandler {
     newMessageElement.className = 'message';
 
     // Check the nodeID to determine if the message is sent or received
-    if (message.NodeID === myNodeID) {
+    if (nodeTable[message.NodeID] === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
+      const senderNode = nodeTable[message.NodeID]
       newMessageElement.classList.add('received');
     }
 
@@ -73,8 +83,8 @@ class ChatHandler {
 }
 
 // Globals
-const maxMessageLength = 255;
-const myNodeID = 0x00;
+let nodeTable = null;
+const myNodeID = nodeTable[0];
 document.getElementById('nodeIDDisplay').textContent = myNodeID;
 const publicChatHandler = new ChatHandler();
 let socket;
@@ -84,6 +94,7 @@ function openWebSocket() {
       new WebSocket('ws://avalink.local/chat');  // change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
+    publicChatHandler.lookupNodes('lookup.JSON');
     publicChatHandler.parseHistory('history.JSON');
   };
   socket.onmessage = function(event) {
