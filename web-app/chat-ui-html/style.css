@@ -82,6 +82,16 @@ body {
     font-size: 40px;
 }
 
+.node-info {
+    font-size: 12px;
+    color: grey;
+    margin-bottom: 4px;
+}
+
+.message-wrapper {
+    margin-bottom: 10px;
+}
+
 
 .inputSection {
     height: 50%;

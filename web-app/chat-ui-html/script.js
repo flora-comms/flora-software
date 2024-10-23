@@ -74,6 +74,7 @@ class ChatHandler {
     if (message.NodeID === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
+      // Add small grey text above received messages
       newMessageElement.classList.add('received');
     }
 
