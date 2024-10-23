@@ -32,8 +32,8 @@ class ChatHandler {
       nodeTable = data;  
       console.log("Data fetched and stored:", nodeTable); 
 
-      myNodeID = nodeTable.nodeTable[0];  // Set myNodeID after nodeTable is fetched
-      document.getElementById('nodeIDDisplay').textContent = myNodeID;
+      myNodeID = nodeTable["0"];  // Set myNodeID after nodeTable is fetched
+      document.getElementById('nodeIDDisplay').textContent = nodeTable[myNodeID];
 
       if (callback) {
         callback();  // Call the callback to proceed after lookupNodes is done
@@ -71,13 +71,7 @@ class ChatHandler {
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
-    console.log("message.NodeID:", message.NodeID);
-    console.log("Type of message.NodeID:", typeof message.NodeID);
-    console.log("myNodeID:", myNodeID);
-    console.log("Type of myNodeID:", typeof myNodeID);
-    
-
-    if (nodeTable[message.NodeID] === myNodeID) {
+    if (message.NodeID === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
       newMessageElement.classList.add('received');

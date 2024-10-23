@@ -1,12 +1,10 @@
-{  
-    "nodeTable":[
-        "5",
-        "Tent",
-        "Noyse",
-        "Blueberry",
-        "T-Hut",
-        "Tower",
-        "Meadow"
-    ]
+{
+    "0":5,
+    "1":"Tent",
+    "2":"Noyse",
+    "3":"Blueberry",
+    "4":"T-Hut",
+    "5":"Tower",
+    "6":"Meadow"
 }
 
