@@ -16,7 +16,8 @@ class ChatHandler {
         .then(data => {
           if (data.Type === 'History' && Array.isArray(data.Messages)) {
             data.Messages.forEach(message => {
-              this.updateChatContainer(message);  // Call the function to display the message
+              this.updateChatContainer(
+                  message);  // Call the function to display the message
             });
           } else {
             console.error('Invalid message history structure.');
@@ -27,19 +28,21 @@ class ChatHandler {
 
   lookupNodes(file, callback) {  // Add callback for synchronization
     fetch(file)
-    .then(response => response.json())
-    .then(data => {
-      nodeTable = data;  
-      console.log("Data fetched and stored:", nodeTable); 
+        .then(response => response.json())
+        .then(data => {
+          nodeTable = data;
+          console.log('Data fetched and stored:', nodeTable);
 
-      myNodeID = nodeTable["0"];  // Set myNodeID after nodeTable is fetched
-      document.getElementById('nodeIDDisplay').textContent = nodeTable[myNodeID];
+          myNodeID = nodeTable['0'];  // Set myNodeID after nodeTable is fetched
+          document.getElementById('nodeIDDisplay').textContent =
+              nodeTable[myNodeID];
 
-      if (callback) {
-        callback();  // Call the callback to proceed after lookupNodes is done
-      }
-    })
-    .catch(error => console.error('Error fetching the file:', error));
+          if (callback) {
+            callback();  // Call the callback to proceed after lookupNodes is
+                         // done
+          }
+        })
+        .catch(error => console.error('Error fetching the file:', error));
   }
 
   sendMessage() {
@@ -68,36 +71,47 @@ class ChatHandler {
 
   updateChatContainer(message) {
     const chatContainer = document.getElementById('chatContainer');
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
     if (message.NodeID === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
-      // Add small grey text above received messages
       newMessageElement.classList.add('received');
+      const nodeIDElement = document.createElement('div');
+      nodeIDElement.className = 'node-ID';
+      nodeIDElement.innerText = nodeTable[message.NodeID];
+      messageWrapper.appendChild(nodeIDElement);
     }
 
     newMessageElement.innerText = message.Payload;
-    chatContainer.appendChild(newMessageElement);
-    chatContainer.scrollTop = chatContainer.scrollHeight;  // Scroll to the bottom
+    messageWrapper.appendChild(newMessageElement);
+
+    chatContainer.appendChild(messageWrapper);
+
+    chatContainer.scrollTop =
+        chatContainer.scrollHeight;  // Scroll to the bottom
   }
 }
 
 // Globals
 let nodeTable = null;
-let myNodeID = null;  
+let myNodeID = null;
 const publicChatHandler = new ChatHandler();
 let socket;
 
 function openWebSocket() {
-  socket = new WebSocket('ws://localhost:8080');  // Change to DNS URL once setup
+  socket =
+      new WebSocket('ws://192.168.1.69:8080');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
 
     // Fetch the nodeTable first, then fetch history
     publicChatHandler.lookupNodes('lookup.JSON', () => {
-    publicChatHandler.parseHistory('history.JSON');
+      publicChatHandler.parseHistory('history.JSON');
     });
   };
 

@@ -9,6 +9,7 @@
 /* Ensure full height for html and body */
 html, body {
     height: 100%;
+    overflow: hidden;
 }
 
 /* Body setup */
@@ -42,7 +43,7 @@ body {
 }
 
 .chatContainer {
-    flex: 0 0 80%; /* 70% height */
+    height: 80%; 
     padding: 10px;
     overflow-y: auto; /* Allow scrolling */
     background-color: #fff;
@@ -54,7 +55,7 @@ body {
     flex-direction: column; /* Stack messages vertically */
 }
 .inputContainer {
-    flex: 0 0 15%; /* 30% height */
+    height: 15%; 
     padding: 10px;
     background-color: #ffffff; /* Optional: background for input container */
     display: flex;
@@ -82,16 +83,19 @@ body {
     font-size: 40px;
 }
 
-.node-info {
-    font-size: 12px;
+.node-ID {
+    font-size: 30px;
+    font-style: italic;
     color: grey;
     margin-bottom: 4px;
 }
 
 .message-wrapper {
-    margin-bottom: 10px;
+    margin-bottom: 10px; /* Space between messages */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
-
 
 .inputSection {
     height: 50%;
@@ -159,22 +163,4 @@ input {
   font-weight: bold;
 }
 
-/* Media Queries for Responsiveness */
-@media (max-width: 600px) {
-    .chatContainer {
-        padding: 5px; /* Reduce padding on mobile */
-    }
 
-    .inputContainer {
-        padding: 5px; /* Reduce padding on mobile */
-    }
-
-    .message {
-        font-size: 14px; /* Adjust font size for messages */
-    }
-
-    input, .sendButton, .sosButton {
-        font-size: 14px; /* Adjust button font size for mobile */
-        padding: 8px; /* Adjust padding for smaller screens */
-    }
-}

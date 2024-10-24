@@ -5,29 +5,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
     <body onload="openWebSocket()">
-        <!-- Info Bar -->
-    <!-- Info Bar -->
-    <div class="infoBar">
-        <img src="avalink_logo.png" alt="Logo" class="logo">
-        <div class="infoText">Current Node: <span id="nodeIDDisplay"></span></div>
-    </div>
-         <!-- Chat container -->
-        <div class="chatContainer" id="chatContainer">
-            <div class="message-wrapper">
-                <!-- <div class="node-info"</div> -->
-                <div class="message"></div>
+            <div class="infoBar">
+                <img src="avalink_logo.png" alt="Logo" class="logo">
+                <div class="infoText">Current Node: <span id="nodeIDDisplay"></span></div>
             </div>
-        </div>
-        <!-- Input container -->
-        <div class="inputContainer">
-            <div class="inputSection">
-                <input type = "text" id = "messageInput" maxlength="255"></input> 
-                <button class="sendButton" onclick = "publicChatHandler.sendMessage()">Send</button>
-            </div>
-            <button class="sosButton" onclick="showModal">SOS</button>
-        </div>
+                <!-- Chat container -->
+                <div class="chatContainer" id="chatContainer">
+                    <div class="message-wrapper">
+                        <div class="node-info"></div>
+                        <div class="message"></div>
+                    </div>
+                </div>
 
-        <SosModal IsVisible="isVisible" HideModal="hideModal" />
-    <script src ="script.js"></script>
+                <!-- Input container -->
+                <div class="inputContainer">
+                    <div class="inputSection">
+                        <input type = "text" id = "messageInput" maxlength="255" inputmode="text"></input> 
+                        <button class="sendButton" onclick = "publicChatHandler.sendMessage()">Send</button>
+                    </div>
+                    <button class="sosButton" onclick="showModal">SOS</button>
+                </div>
+
+                <SosModal IsVisible="isVisible" HideModal="hideModal" />
+            <script src ="script.js"></script>
     </body> 
 </html>

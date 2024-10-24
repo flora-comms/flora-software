@@ -19,7 +19,7 @@
         {
             "Type": "Msg",
             "Payload": "How are you?",
-            "NodeID": 1
+            "NodeID": 6
         },
         {
             "Type": "Msg",
@@ -34,7 +34,7 @@
         {
             "Type": "Msg",
             "Payload": "Yet another message.",
-            "NodeID": 0
+            "NodeID": 4
         },
         {
             "Type": "Msg",
