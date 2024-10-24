@@ -1,7 +1,14 @@
+// Globals
+let nodeTable = null;
+let myNodeID = null;
+let publicChatHandler = null;
+let socket;
+
+
 class Message {
   constructor(content) {
     this.Payload = content;
-    this.NodeID = myNodeID;  // myNodeID will be set after lookupNodes()
+    this.NodeID = myNodeID;  // myNodeID will be set after readLookup()
   }
 }
 
@@ -26,7 +33,7 @@ class ChatHandler {
         .catch(error => console.error('Error loading JSON:', error));
   }
 
-  lookupNodes(file, callback) {  // Add callback for synchronization
+  readLookup(file, callback) {
     fetch(file)
         .then(response => response.json())
         .then(data => {
@@ -37,9 +44,9 @@ class ChatHandler {
           document.getElementById('nodeIDDisplay').textContent =
               nodeTable[myNodeID];
 
-          if (callback) {
-            callback();  // Call the callback to proceed after lookupNodes is
-                         // done
+          if (callback)  // execute ParseHistory as a callback
+          {
+            callback();
           }
         })
         .catch(error => console.error('Error fetching the file:', error));
@@ -97,11 +104,7 @@ class ChatHandler {
   }
 }
 
-// Globals
-let nodeTable = null;
-let myNodeID = null;
-const publicChatHandler = new ChatHandler();
-let socket;
+publicChatHandler = new ChatHandler();
 
 function openWebSocket() {
   socket =
@@ -110,7 +113,7 @@ function openWebSocket() {
     console.log('WebSocket is connected.');
 
     // Fetch the nodeTable first, then fetch history
-    publicChatHandler.lookupNodes('lookup.JSON', () => {
+    publicChatHandler.readLookup('lookup.JSON', () => {
       publicChatHandler.parseHistory('history.JSON');
     });
   };
