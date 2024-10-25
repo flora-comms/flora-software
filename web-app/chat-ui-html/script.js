@@ -108,7 +108,7 @@ publicChatHandler = new ChatHandler();
 
 function openWebSocket() {
   socket =
-      new WebSocket('ws://192.168.1.69:8080');  // Change to DNS URL once setup
+      new WebSocket('ws://192.168.1.67:8080');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
 
