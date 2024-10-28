@@ -34,8 +34,8 @@ FIRMWARE
 
 Variables for firmware configuration
 */
-#define WIFI_SSID "AVAlink"             // WiFi network name
-#define WEBSERVER_DNS       "avalink"   // puts domain at "https://{WEBSERVER_DNS}.local"
+#define WIFI_SSID           "AVAlink"   // WiFi network name
+#define WEBSERVER_DNS       "avalink"   // puts domain at "http://{WEBSERVER_DNS}.local"
 #define WEBSOCKET_ENDPOINT  "/chat"     // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
 
 /*
@@ -59,7 +59,8 @@ HARDWARE
 Options for Hardware
 */
 
-#define LILYGO_T3_S3_V1_2
+// #define LILYGO_T3_S3_V1_2
+#define PETAL_V0_0
 
 // LILYGO T3 S3 V1.2
 #ifdef LILYGO_T3_S3_V1_2
@@ -67,6 +68,14 @@ Options for Hardware
   #define SD_SCK  14    // SD sck pin
   #define SD_MOSI 11    // SD mosi pin
   #define SD_MISO 2     // SD miso
+#endif
+
+// Petal V0.0
+#ifdef PETAL_V0_0
+  #define SD_CS   10  // SD chip select pin
+  #define SD_SCK  12  // SD sck pin
+  #define SD_MOSI 11  // SD mosi pin
+  #define SD_MISO 13  // SD miso
 #endif
 // ---------------- GLOBALS ---------------- //
 
@@ -79,7 +88,7 @@ AsyncWebSocket ws(WEBSOCKET_ENDPOINT);
 
 // ---------------- PROTOTYPES ---------------- //
 
-/// @brief avalink.local/chat websocket event handler
+/// @brief websocket event handler
 /// @param server The WebSocket server/// 
 /// @param client The webSocket client
 /// @param type   The type of WebSocket event
@@ -101,6 +110,7 @@ void setup() {
 
   // Set up Wi-Fi (AP mode)
   DBG_PRINTLN("Setting up Access Point with SSID: ");
+  DBG_PRINTLN(WIFI_SSID);
   if (WiFi.softAP(WIFI_SSID))
   {
     DBG_PRINTLN("Access Point setup complete");
@@ -180,6 +190,10 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   {
 
     ws.textAll(data, len);
+
+    // File history = SD.open("/history.JSON", FILE_WRITE);  // open history file
+    // history.write(*data);                     // write data
+    // history.close();                          // close the file
 
     #ifdef DEBUG
       Serial.print("Data received: ");
