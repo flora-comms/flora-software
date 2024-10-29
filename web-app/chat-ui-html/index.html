@@ -23,10 +23,18 @@
                         <input type = "text" id = "messageInput" maxlength="255" inputmode="text"></input> 
                         <button class="sendButton" onclick = "publicChatHandler.sendMessage()">Send</button>
                     </div>
-                    <button class="sosButton" onclick="showModal">SOS</button>
+                    <button class="sosButton" onclick="showModal()">SOS</button>
                 </div>
 
-                <SosModal IsVisible="isVisible" HideModal="hideModal" />
+                <!-- Modal -->
+                <div id="sosModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close"> &times</span>
+                        <p>Are you sure you want to send an SOS Alert?</p>
+                        <button class="sosButton" onclick="sendSOS()">Yes</button>
+                        <button class="cancelButton" = "hideModal()">Cancel</button>
+                    </div>
+                </div>
             <script src ="script.js"></script>
     </body> 
 </html>

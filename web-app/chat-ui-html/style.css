@@ -83,6 +83,16 @@ body {
     font-size: 40px;
 }
 
+.message.sent.sos-message {
+    background-color: #FF4C4C; /* Red background for sent SOS messages */
+    color: white; /* Keep white text */
+}
+
+.message.received.sos-message {
+    background-color: #FF4C4C; /* Red background for received SOS messages */
+    color: white; /* Keep white text */
+}
+
 .node-ID {
     font-size: 30px;
     font-style: italic;
@@ -137,30 +147,60 @@ input {
     width: 100%; /* Make SOS button full width */
 }
 
+/* Modal styling */
 
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%; /* Adjusted for full screen */
-  height: 100%; /* Adjusted for full screen */
-  overflow: auto;
-  background-color: rgba(0,0,0,0.4);
-}
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 90%; /* Adjusted to fit smaller screens */
-}
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%; /* Full screen width */
+    height: 100%; /* Full screen height */
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px); /* Blurs the background */
+    justify-content: center; /* Centers modal content horizontally */
+    align-items: center; /* Centers modal content vertically */
+    text-align: center;
+    font-size: 24px;
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 2px solid #898989;
+    border-radius: 10px;
+    width: 90%; /* Adjusted to fit smaller screens */
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+    gap: 20px; /* Space between elements */
+  }
+  
+  .close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    align-self: flex-end; /* Align close button to the top-right */
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .cancelButton {
+    height: 30%;
+    font-size: 45px;
+    background-color: lightgray;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%; /* Make SOS button full width */
+  }
+  
+  
 
 

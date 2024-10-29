@@ -84,6 +84,11 @@ class ChatHandler {
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
+      // Check if the message is an SOS message
+    if (message.Payload === "SOS") {
+    newMessageElement.classList.add('sos-message'); // Apply SOS-specific class
+    }
+
     if (message.NodeID === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
@@ -105,6 +110,40 @@ class ChatHandler {
 }
 
 publicChatHandler = new ChatHandler();
+
+function showModal(){
+  const modal = document.getElementById("sosModal");
+  modal.style.display = "flex";
+}
+
+function closeModal(){
+  const modal = document.getElementById("sosModal");
+  modal.style.display = "none";
+}
+
+function sendSOS(){
+  const sosMessage = new Message("SOS");
+  socket.send(JSON.stringify(sosMessage));
+  closeModal();
+}
+
+window.onclick = function(event){
+  const modal = document.getElementById("sosModal");
+  if(event.target == modal){
+    modal.style.display = "none";
+  }
+}
+
+document.querySelector('.close').onclick = function() {
+  closeModal();
+}
+
+document.querySelector('.cancelButton').onclick = function() {
+  closeModal();
+}
+
+
+
 
 function openWebSocket() {
   socket =
