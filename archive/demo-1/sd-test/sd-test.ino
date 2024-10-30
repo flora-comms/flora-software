@@ -1,8 +1,14 @@
 #include <SPI.h>
 #include <SD.h>
 
-// Define the Chip Select (CS) pin
-const int SD_CS_PIN = 8; // Use GPIO 10 or any available GPIO for CS
+#define petal_v_0_0
+
+#ifdef petal_v_0_0
+  #define SD_CS   10
+  #define SD_SCK  12
+  #define SD_MOSI 11
+  #define SD_MISO 13
+#endif
 
 void setup() {
     Serial.begin(115200);
@@ -10,10 +16,11 @@ void setup() {
         ; // Wait for the serial port to connect (optional)
     }
 
-    Serial.println("Initializing SD card using default FSPI pins...");
+    Serial.println("Initializing SD card using petal pins...");
+    SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
 
     // Initialize SD card with the specified CS pin
-    if (!SD.begin(SD_CS_PIN)) {
+    if (!SD.begin(SD_CS, SPI)) {
         Serial.println("SD card initialization failed!");
         return;
     }

@@ -1,9 +1,14 @@
+// Globals
+let nodeTable = null;
+let myNodeID = null;
+let publicChatHandler = null;
+let socket;
 
 
 class Message {
   constructor(content) {
     this.Payload = content;
-    this.NodeID = myNodeID;
+    this.NodeID = myNodeID;  // myNodeID will be set after readLookup()
   }
 }
 
@@ -11,6 +16,7 @@ class ChatHandler {
   constructor() {
     this.messageHistory = [];
   }
+
   parseHistory(file) {
     fetch(file)
         .then(response => response.json())
@@ -27,22 +33,39 @@ class ChatHandler {
         .catch(error => console.error('Error loading JSON:', error));
   }
 
+  readLookup(file, callback) {
+    fetch(file)
+        .then(response => response.json())
+        .then(data => {
+          nodeTable = data;
+          console.log('Data fetched and stored:', nodeTable);
+
+          myNodeID = nodeTable['0'];  // Set myNodeID after nodeTable is fetched
+          document.getElementById('nodeIDDisplay').textContent =
+              nodeTable[myNodeID];
+
+          if (callback)  // execute ParseHistory as a callback
+          {
+            callback();
+          }
+        })
+        .catch(error => console.error('Error fetching the file:', error));
+  }
+
   sendMessage() {
     const inputElement = document.getElementById('messageInput');
     const Payload = inputElement.value;
     const trimmedContent = Payload.trim();
 
-    if (socket &&
-        socket.readyState === WebSocket.OPEN) {  // Ensure the socket is open
-      // Check if the message content is not empty
+    if (socket && socket.readyState === WebSocket.OPEN) {
       if (trimmedContent !== '') {
         const newMessage = new Message(Payload);
         inputElement.value = '';
         console.log(newMessage);
-        socket.send(JSON.stringify(newMessage));  //
+        socket.send(JSON.stringify(newMessage));
       }
     } else {
-      console.log('WebSocket is not connected. Message not NodeID.');
+      console.log('WebSocket is not connected.');
     }
   }
 
@@ -55,43 +78,93 @@ class ChatHandler {
 
   updateChatContainer(message) {
     const chatContainer = document.getElementById('chatContainer');
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
-    // Check the nodeID to determine if the message is sent or received
+      // Check if the message is an SOS message
+    if (message.Payload === "SOS") {
+    newMessageElement.classList.add('sos-message'); // Apply SOS-specific class
+    }
+
     if (message.NodeID === myNodeID) {
       newMessageElement.classList.add('sent');
     } else {
       newMessageElement.classList.add('received');
+      const nodeIDElement = document.createElement('div');
+      nodeIDElement.className = 'node-ID';
+      nodeIDElement.innerText = nodeTable[message.NodeID];
+      messageWrapper.appendChild(nodeIDElement);
     }
 
     newMessageElement.innerText = message.Payload;
-    chatContainer.appendChild(newMessageElement);
+    messageWrapper.appendChild(newMessageElement);
+
+    chatContainer.appendChild(messageWrapper);
+
     chatContainer.scrollTop =
         chatContainer.scrollHeight;  // Scroll to the bottom
   }
 }
 
-// Globals
-const maxMessageLength = 255;
-const myNodeID = 0x00;
-document.getElementById('nodeIDDisplay').textContent = myNodeID;
-const publicChatHandler = new ChatHandler();
-let socket;
+publicChatHandler = new ChatHandler();
+
+function showModal(){
+  const modal = document.getElementById("sosModal");
+  modal.style.display = "flex";
+}
+
+function closeModal(){
+  const modal = document.getElementById("sosModal");
+  modal.style.display = "none";
+}
+
+function sendSOS(){
+  const sosMessage = new Message("SOS");
+  socket.send(JSON.stringify(sosMessage));
+  closeModal();
+}
+
+window.onclick = function(event){
+  const modal = document.getElementById("sosModal");
+  if(event.target == modal){
+    modal.style.display = "none";
+  }
+}
+
+document.querySelector('.close').onclick = function() {
+  closeModal();
+}
+
+document.querySelector('.cancelButton').onclick = function() {
+  closeModal();
+}
+
+
+
 
 function openWebSocket() {
   socket =
-      new WebSocket('ws://avalink.local/chat');  // change to DNS URL once setup
+      new WebSocket('ws://avalink.local/chat');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
-    publicChatHandler.parseHistory('history.JSON');
+
+    // Fetch the nodeTable first, then fetch history
+    publicChatHandler.readLookup('lookup.JSON', () => {
+      publicChatHandler.parseHistory('history.JSON');
+    });
   };
+
   socket.onmessage = function(event) {
     publicChatHandler.receiveMessage(event);
   };
+
   socket.onclose = function(event) {
     console.log('WebSocket is closed.');
   };
+
   socket.onerror = function(error) {
     console.log('WebSocket error: ' + error.message);
   };
