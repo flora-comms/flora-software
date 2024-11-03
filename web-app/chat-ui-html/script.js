@@ -9,6 +9,7 @@ class Message {
   constructor(content) {
     this.Payload = content;
     this.NodeID = myNodeID;  // myNodeID will be set after readLookup()
+    this.SOS = 0;
   }
 }
 
@@ -19,19 +20,28 @@ class ChatHandler {
 
   parseHistory(file) {
     fetch(file)
-        .then(response => response.json())
-        .then(data => {
-          if (data.Type === 'History' && Array.isArray(data.Messages)) {
-            data.Messages.forEach(message => {
-              this.updateChatContainer(
-                  message);  // Call the function to display the message
-            });
-          } else {
-            console.error('Invalid message history structure.');
-          }
+        .then(response => response.text())
+        .then(text => {
+          const messages = [];
+          const rows = text.trim().split('\n');
+          rows.shift();  // Remove header
+
+          rows.forEach(row => {
+            const match = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+
+            if (match) {
+              const payload = match[0].replace(/^"|"$/g, '').trim();
+              const nodeId = parseInt(match[1].trim(), 10);
+              const sos = parseInt(match[2].trim(), 10);
+
+              const message = {Payload: payload, NodeID: nodeId, SOS: sos};
+              this.updateChatContainer(message);  // Display each parsed message
+            }
+          });
         })
-        .catch(error => console.error('Error loading JSON:', error));
+        .catch(error => console.error('Error loading CSV:', error));
   }
+
 
   readLookup(file, callback) {
     fetch(file)
@@ -84,9 +94,10 @@ class ChatHandler {
     const newMessageElement = document.createElement('div');
     newMessageElement.className = 'message';
 
-      // Check if the message is an SOS message
-    if (message.Payload === "SOS") {
-    newMessageElement.classList.add('sos-message'); // Apply SOS-specific class
+    // Check if the message is an SOS message
+    if (message.SOS === 1) {
+      newMessageElement.classList.add(
+          'sos-message');  // Apply SOS-specific class
     }
 
     if (message.NodeID === myNodeID) {
@@ -111,49 +122,55 @@ class ChatHandler {
 
 publicChatHandler = new ChatHandler();
 
-function showModal(){
-  const modal = document.getElementById("sosModal");
-  modal.style.display = "flex";
+function showModal() {
+  const modal = document.getElementById('sosModal');
+  modal.style.display = 'flex';
 }
 
-function closeModal(){
-  const modal = document.getElementById("sosModal");
-  modal.style.display = "none";
+function closeModal() {
+  const modal = document.getElementById('sosModal');
+  modal.style.display = 'none';
 }
 
-function sendSOS(){
-  const sosMessage = new Message("SOS");
+function sendSOS() {
+  const sosMessage = new Message('SOS');
+  sosMessage.SOS = 1;
   socket.send(JSON.stringify(sosMessage));
   closeModal();
 }
 
-window.onclick = function(event){
-  const modal = document.getElementById("sosModal");
-  if(event.target == modal){
-    modal.style.display = "none";
+window.onclick =
+    function(event) {
+  const modal = document.getElementById('sosModal');
+  if (event.target == modal) {
+    modal.style.display = 'none';
   }
 }
 
-document.querySelector('.close').onclick = function() {
+    document.querySelector('.close')
+        .onclick =
+        function() {
   closeModal();
 }
 
-document.querySelector('.cancelButton').onclick = function() {
+        document.querySelector('.cancelButton')
+            .onclick =
+            function() {
   closeModal();
 }
 
 
 
-
-function openWebSocket() {
+function
+openWebSocket() {
   socket =
-      new WebSocket('ws://avalink.local/chat');  // Change to DNS URL once setup
+      new WebSocket('ws://localhost:8080');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
 
     // Fetch the nodeTable first, then fetch history
     publicChatHandler.readLookup('lookup.JSON', () => {
-      publicChatHandler.parseHistory('history.JSON');
+      publicChatHandler.parseHistory('history.csv');
     });
   };
 

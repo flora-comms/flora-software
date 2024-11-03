@@ -14,7 +14,8 @@
          {
             "Type": "Msg",
             "Payload": "Hello, world!",
-            "NodeID": 1
+            "NodeID": 1,
+            "SOS": 0
         },
         {
             "Type": "Msg",
