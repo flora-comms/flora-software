@@ -1,0 +1,68 @@
+Not connected. Select a board and a port to connect automatically.
+New Line
+115200 baud
+  ȵ ʲ ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x8 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3818,len:0x109c
+load:0x403c9700,len:0x4
+load:0x403c9704,len:0xb50
+load:0x403cc700,len:0x2fe4
+entry 0x403c98ac
+Setting up Access Point with SSID: Access Point setup complete
+Access Point IP address: 192.168.4.1
+Initializing SD card...
+SD card mounted successfully.
+Server started
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x8 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce3818,len:0x109c
+load:0x403c9700,len:0x4
+load:0x403c9704,len:0xb50
+load:0x403cc700,len:0x2fe4
+entry 0x403c98ac
+Setting up Access Point with SSID: Access Point setup complete
+Access Point IP address: 192.168.4.1
+Initializing SD card...
+SD card mounted successfully.
+Server started
+E (71337) vfs_fat: open: no free file descriptors
+E (71387) vfs_fat: open: no free file descriptors
+E (71535) vfs_fat: open: no free file descriptors
+E (71550) vfs_fat: open: no free file descriptors
+E (71654) vfs_fat: open: no free file descriptors
+E (71696) vfs_fat: open: no free file descriptors
+E (71886) vfs_fat: open: no free file descriptors
+E (71914) vfs_fat: open: no free file descriptors
+E (72141) vfs_fat: open: no free file descriptors
+E (72165) vfs_fat: open: no free file descriptors
+E (82845) task_wdt: Task watchdog got triggered. The following tasks/users did not reset the watchdog in time:
+E (82845) task_wdt:  - async_tcp (CPU 0/1)
+E (82845) task_wdt: Tasks currently running:
+E (82845) task_wdt: CPU 0: IDLE0
+E (82845) task_wdt: CPU 1: loopTask
+E (82845) task_wdt: Print CPU 0 (current core) backtrace
+Backtrace: 0x4201986F:0x3FC979A0 0x40378999:0x3FC979D0 0x4037B3A3:0x3FCF4750 0x4201A35D:0x3FCF4770 0x4037E247:0x3FCF4790 0x4037FF22:0x3FCF47B0
+
+
+
+E (82845) task_wdt: Aborting.
+E (82845) task_wdt: Print CPU 1 backtrace
+
+
+
+
+Backtrace: 0x400559dd:0x3fcebe20 0x403801b6:0x3fcebe30 0x4037d88f:0x3fcebe50 0x420120c1:0x3fcebe90 0x4200e3a1:0x3fcebec0 0x4200e445:0x3fcebee0 0x420127a8:0x3fcebf00 0x4037ff22:0x3fcebf20
+
+
+
+
+ELF file SHA256: 7802db1d271c72fa
+
+Rebooting...
+
