@@ -17,6 +17,8 @@ Firmware for AVAlink nodes
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
+#include <RadioLib.h>
+#include <ArduinoJson.h>
 
 // ---------------- DEFINES ---------------- //
 
@@ -34,10 +36,10 @@ FIRMWARE
 
 Variables for firmware configuration
 */
-#define WIFI_SSID           "AVAlink"   // WiFi network name
+#define WIFI_SSID           "Petal Radio"   // WiFi network name
 #define WEBSERVER_DNS       "avalink"   // puts domain at "http://{WEBSERVER_DNS}.local"
 #define WEBSOCKET_ENDPOINT  "/chat"     // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
-
+#define SPI sd_spi
 /*
 DEBUGGING
 
@@ -59,32 +61,79 @@ HARDWARE
 Options for Hardware
 */
 
-// #define LILYGO_T3_S3_V1_2
+//#define LILYGO_T3_S3_V1_2
 #define PETAL_V0_0
 
 // LILYGO T3 S3 V1.2
 #ifdef LILYGO_T3_S3_V1_2
-  #define SD_CS   13    // SD chip select pin
-  #define SD_SCK  14    // SD sck pin
-  #define SD_MOSI 11    // SD mosi pin
-  #define SD_MISO 2     // SD miso
+#define SD_CS     13    // SD chip select pin
+#define SD_SCK    14    // SD sck pin
+#define SD_MOSI   11    // SD mosi pin
+#define SD_MISO   2     // SD miso
+
+#define LORA_NSS  7
+#define LORA_IRQ  33
+#define LORA_NRST 8
+#define LORA_BUSY 34
+#define LORA_MOSI 6
+#define LORA_MISO 3
+#define LORA_SCK  5
 #endif
 
 // Petal V0.0
 #ifdef PETAL_V0_0
-  #define SD_CS   10  // SD chip select pin
-  #define SD_SCK  12  // SD sck pin
-  #define SD_MOSI 11  // SD mosi pin
-  #define SD_MISO 13  // SD miso
-#endif
-// ---------------- GLOBALS ---------------- //
 
-AsyncWebServer server(80);    // web server on port 80
-AsyncWebSocket ws(WEBSOCKET_ENDPOINT); 
+#define SD_CS     10  // SD chip select pin
+#define SD_SCK    12  // SD sck pin
+#define SD_MOSI   11  // SD mosi pin
+#define SD_MISO   13  // SD miso
+
+#define LORA_NSS  34
+#define LORA_IRQ  39
+#define LORA_NRST 48
+#define LORA_BUSY 33
+#define LORA_MOSI 35
+#define LORA_MISO 37
+#define LORA_SCK  36
+
+#endif
+
+// SX1262 Setup
+#define LORA_FREQ 915.0 // MHz
+#define LORA_BW 250.0   // kHz
+#define LORA_SF 11
+#define LORA_CR 5
+#define LORA_SYNC 0x34
+#define LORA_POWER 17  // dBm
+#define LORA_PREAMB 16 // symbols
 
 // ---------------- CLASSES ---------------- //
+enum LoraState
+{
+  LORA_TX,
+  LORA_RX,
+  STDBY,
+  SLEEP
+};
 
+// ---------------- GLOBALS ---------------- //
 
+AsyncWebServer server(80);              // web server on port 80
+AsyncWebSocket ws(WEBSOCKET_ENDPOINT);  // websocket
+SPIClass sd_spi(FSPI);                  // SPI=`sd card spi bus
+SPIClass lora_spi(HSPI);                // SPI3 lora module spi bus
+SX1262 radio = new Module(              // lora radio
+    LORA_NSS,
+    LORA_IRQ,
+    LORA_NRST,
+    LORA_BUSY,
+    lora_spi,
+    SPISettings(2000000, MSBFIRST, SPI_MODE0));
+
+volatile bool lora_flag = false;
+int           tx_state = RADIOLIB_ERR_NONE;
+
+enum LoraState lora_state = STDBY;
 
 // ---------------- PROTOTYPES ---------------- //
 
@@ -96,6 +145,11 @@ AsyncWebSocket ws(WEBSOCKET_ENDPOINT);
 /// @param data   Data buffer included in the websocket frame
 /// @param len    Length of the data buffer
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+
+/// @brief Lora interrupt event handler
+void onLoraIrq(void) {
+  lora_flag = true;
+}
 
 // ---------------- MAIN ---------------- //
 
@@ -123,13 +177,12 @@ void setup() {
   DBG_PRINTLN("Access Point IP address: ");
   DBG_PRINTLN(WiFi.softAPIP());
 
-  // Initialize the SD card
 
-  #ifdef ENV_PLATFORMIO
-    DBG_PRINTLN("Initializing SD card...");
-    SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-    SPI.setDataMode(SPI_MODE0);
-  #endif
+  // Setup SPI busses
+  sd_spi.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+  lora_spi.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
+
+  // Initialize the SD card
 
   #ifdef LILYGO_T3_S3_V1_2
     #ifdef ENV_ARDUINO
@@ -150,12 +203,32 @@ void setup() {
     DBG_PRINTLN("SD card mounted successfully.");
   }
 
+  // initialize SX1262 with default settings
+  Serial.print(F("[SX1262] Initializing ... "));
+  int state = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
+  if (state == RADIOLIB_ERR_NONE)
+  {
+    Serial.println(F("success!"));
+  }
+  else
+  {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+  }
+  radio.setCurrentLimit(60.0);
+  radio.setDio2AsRfSwitch(true);
+  radio.explicitHeader();
+  radio.setCRC(2);
+  radio.setDio1Action(onLoraIrq);
+  radio.startReceive();
+  lora_state = LORA_RX;
+
   // Start server
 
   server.begin();
   DBG_PRINTLN("Web server started!");
 
-  server.serveStatic("/", SD, "/").setDefaultFile("/index.html");
+  server.serveStatic("/", SD, "/").setDefaultFile("index.html");
   server.addHandler(&ws);
 
   // start DNS
@@ -172,7 +245,40 @@ void setup() {
 }
 
 void loop() {
-  // nothing nothing
+  if (lora_flag) {
+    lora_flag = false;    // reset flag
+
+    if (lora_state == LORA_TX) {
+      if (!(tx_state == RADIOLIB_ERR_NONE)) {
+        DBG_PRINTLN("LoRa transmission failure");
+      } else {
+        lora_state = LORA_RX;
+        radio.startReceive();
+      }
+    } else if (lora_state == LORA_RX) {
+      int radio_state;
+      String rx_data;
+      radio_state = radio.readData(rx_data);
+      if (!(radio_state == RADIOLIB_ERR_NONE)) {
+        DBG_PRINTLN("Lora RX failure");
+      } else {
+        DBG_PRINTLN("Recieved LoRa data:");
+        DBG_PRINTLN(rx_data);
+        DBG_PRINTLN("");
+        JsonDocument json;
+        json["Payload"] = rx_data;
+        json["NodeID"] = 4;
+        String data;
+        serializeJson(json, data);
+        ws.textAll(data);
+      }
+    } else {
+        DBG_PRINTLN(
+          "lora state invalid????"
+        );
+    }
+
+  }
 }
 
 // ---------------- DEFINITIONS ---------------- //
@@ -188,6 +294,11 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   }
   else if (type == WS_EVT_DATA)
   {
+    JsonDocument json;
+
+    deserializeJson(json, data);
+
+    String payload = json["Payload"];
 
     ws.textAll(data, len);
 
@@ -196,7 +307,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     // history.close();                          // close the file
 
     #ifdef DEBUG
-      Serial.print("Data received: ");
+      Serial.print("WS Data received: ");
 
       for (int i = 0; i < len; i++)
       {
@@ -205,6 +316,11 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
       Serial.println();
     #endif
+
+    tx_state = radio.startTransmit(payload);
+
+    lora_state = LORA_TX;
+
   }
 }
 
