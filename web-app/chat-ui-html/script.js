@@ -169,8 +169,8 @@ openWebSocket() {
     console.log('WebSocket is connected.');
 
     // Fetch the nodeTable first, then fetch history
-    publicChatHandler.readLookup('lookup.JSON', () => {
-      publicChatHandler.parseHistory('history.csv');
+    publicChatHandler.readLookup('data/lookup.JSON', () => {
+      publicChatHandler.parseHistory('data/history.csv');
     });
   };
 
