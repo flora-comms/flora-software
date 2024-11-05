@@ -164,7 +164,7 @@ window.onclick =
 function
 openWebSocket() {
   socket =
-      new WebSocket('ws://localhost:8080');  // Change to DNS URL once setup
+      new WebSocket('ws://avalink.local/chat');  // Change to DNS URL once setup
   socket.onopen = function(event) {
     console.log('WebSocket is connected.');
 
