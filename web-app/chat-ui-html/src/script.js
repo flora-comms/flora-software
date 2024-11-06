@@ -1,10 +1,4 @@
-class Message {
-  constructor(content, nodeId) {
-      this.Payload = content;
-      this.NodeID = nodeId; 
-      this.SOS = 0;
-  }
-}
+import Message from 'src/classes/Message.js';
 
 class ChatHandler {
   constructor() {
