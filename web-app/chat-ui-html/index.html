@@ -4,9 +4,9 @@
     <title>Chat Sample</title>
     <link rel="stylesheet" href="style.css">
 </head>
-    <body onload="openWebSocket()">
+    <body >
             <div class="infoBar">
-                <img src="avalink_logo.png" alt="Logo" class="logo">
+                <img src="assets/avalink_logo.png" alt="Logo" class="logo">
                 <div class="infoText">Current Node: <span id="nodeIDDisplay"></span></div>
             </div>
                 <!-- Chat container -->
@@ -35,6 +35,6 @@
                         <button class="cancelButton" = "hideModal()">Cancel</button>
                     </div>
                 </div>
-            <script src ="script.js"></script>
+            <script type="module" src ="js/main.js"></script>
     </body> 
 </html>

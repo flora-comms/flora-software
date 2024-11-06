@@ -36,7 +36,7 @@ FIRMWARE
 
 Variables for firmware configuration
 */
-#define WIFI_SSID           "Petal Radio"   // WiFi network name
+#define WIFI_SSID           "Petal Radio Cam"   // WiFi network name
 #define WEBSERVER_DNS       "avalink"   // puts domain at "http://{WEBSERVER_DNS}.local"
 #define WEBSOCKET_ENDPOINT  "/chat"     // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
 #define SPI sd_spi
@@ -271,6 +271,7 @@ void loop() {
         String data;
         serializeJson(json, data);
         ws.textAll(data);
+        radio.startReceive();
       }
     } else {
         DBG_PRINTLN(
