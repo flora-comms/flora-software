@@ -1,5 +1,8 @@
 import Message from './message.js';
 
+const WEBSOCKET_URL = 'ws://localhost:8080';
+//const WEBSOCKET_URL = 'ws://avalink.local/chat';
+
 export default class ChatHandler {
     constructor() {
         this.messageHistory = [];
@@ -9,12 +12,12 @@ export default class ChatHandler {
     }
   
     openWebSocket() {
-        this.socket = new WebSocket('ws://localhost:8080'); 
+        this.socket = new WebSocket(WEBSOCKET_URL); 
   
         this.socket.onopen = () => {
             console.log('WebSocket is connected.');
-            this.readLookup('lookup.JSON', () => {
-                this.parseHistory('history.csv');
+            this.readLookup('/data/lookup.JSON', () => {
+                this.parseHistory('/data/history.csv');
             });
         };
   
@@ -63,7 +66,8 @@ export default class ChatHandler {
             .catch(error => console.error('Error loading CSV:', error));
     }
   
-    sendMessage() {
+    sendMessage(isSOS = false) {
+    if(!isSOS){
         const inputElement = document.getElementById('messageInput');
         const Payload = inputElement.value.trim();
   
@@ -75,6 +79,13 @@ export default class ChatHandler {
         } else {
             console.log('WebSocket is not connected.');
         }
+    }
+    else
+    {
+        const sosMessage = new Message('SOS', this.myNodeID);
+        sosMessage.SOS = 1;
+        this.socket.send(JSON.stringify(sosMessage));
+    }
     }
   
     receiveMessage(event) {
