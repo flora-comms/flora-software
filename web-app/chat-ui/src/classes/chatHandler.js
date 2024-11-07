@@ -1,7 +1,7 @@
 import Message from './message.js';
 
-const WEBSOCKET_URL = 'ws://localhost:8080';
-//const WEBSOCKET_URL = 'ws://avalink.local/chat';
+//const WEBSOCKET_URL = 'ws://localhost:8080';
+const WEBSOCKET_URL = 'ws://avalink.local/chat';
 
 export default class ChatHandler {
     constructor() {

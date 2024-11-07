@@ -5,6 +5,7 @@ import { showModal, closeModal } from '/src/utilities/modal.js';
 const chatHandler = new ChatHandler();
 chatHandler.openWebSocket();
 
+// Event listeners
 document.getElementById("sendButton").onclick = () => chatHandler.sendMessage();
 document.getElementById("sosButton").onclick = showModal;
 document.getElementById("confirmSOS").onclick = () => {chatHandler.sendMessage(true); closeModal();}
