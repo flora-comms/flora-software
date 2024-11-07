@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Sample</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="infoBar">
+        <img src="/assets/avalink_logo.png" alt="Logo" class="logo">
+        <div class="infoText">Current Node: <span id="nodeIDDisplay"></span></div>
+    </div>
+
+    <!-- Chat container -->
+    <div class="chatContainer" id="chatContainer">
+        <div class="message-wrapper">
+            <div class="node-info"></div>
+            <div class="message"></div>
+        </div>
+    </div>
+
+    <!-- Input container -->
+    <div class="inputContainer">
+        <div class="inputSection">
+            <input type="text" id="messageInput" maxlength="255" inputmode="text">
+            <button class="sendButton" id="sendButton">Send</button>
+        </div>
+        <button class="sosButton" id="sosButton">SOS</button>
+    </div>
+
+    <!-- Modal -->
+    <div id="sosModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Are you sure you want to send an SOS Alert?</p>
+            <button class="sosButton" id="confirmSOS">Yes</button>
+            <button class="cancelButton" id="cancelSOS">Cancel</button>
+        </div>
+    </div>
+
+    <script type= "module" src="/src/main.js"></script>
+</body> 
+</html>
