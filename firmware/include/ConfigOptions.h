@@ -38,7 +38,9 @@ Variables for firmware configuration
 #define WIFI_SSID "AVAlink"    // WiFi network name
 #define WEBSERVER_DNS "avalink"    // puts domain at "http://{WEBSERVER_DNS}.local"
 #define WEBSOCKET_ENDPOINT "/chat" // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
-#define SPI sd_spi
+#define MAX_LORA_TTL     4           // maximum TTL hop count
+#define QUEUE_LENGTH    10          // freertos queue length
+#define STACK_SIZE      8192        // stack size for each task
 
 /*
 

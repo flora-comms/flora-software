@@ -2,6 +2,7 @@
 
 #ifndef AVALINK_CONFIG_H
 #define AVALINK_CONFIG_H
+
 #include <ConfigOptions.h>
 
 
@@ -9,9 +10,13 @@
 
 #ifdef DEBUG
 #define SERIAL_BAUD 115200
-#define DBG_PRINTLN(MSG) Serial.println(MSG)
+#define DBG_PRINTLN(MSG)            Serial.println(MSG)
+#define DBG_PRINT(MSG)              Serial.print(MSG)
+#define DBG_PRINTF(format, args...)  Serial.printf(format, args)
 #else
 #define DBG_PRINTLN(MSG)
+#define DBG_PRINT(MSG)
+#define DBG_PRINTF(format, args...)
 #endif
 
 // HARDWARE
@@ -43,7 +48,7 @@
 #define SD_MISO 13 // SD miso
 
 #define LORA_NSS 34
-#define LORA_IRQ 39
+#define LORA_IRQ 38
 #define LORA_NRST 48
 #define LORA_BUSY 33
 #define LORA_MOSI 35
