@@ -52,9 +52,10 @@ class Message
 {
 public:
     MsgType type;       // the message type
-    char *payload;    // message payload array
+    String payload;    // message payload string
     uint8_t senderId;   // the sender ID (0-255). 0 reserved for gateway
 
+    /// @brief Default Message constructor
     Message();
 
     /// @brief Converts a serial json message  into a Message type.

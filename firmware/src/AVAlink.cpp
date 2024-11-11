@@ -10,10 +10,7 @@ void initAvalink()
 #ifdef ENV_PLATFORMIO
     delay(5000); // to give time to restart serial monitor task
 #endif
-    
-    
-    initWebServer();
-    initLora(&radio);
+
 
     return;
 }

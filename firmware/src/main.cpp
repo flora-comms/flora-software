@@ -38,8 +38,8 @@ void setup() {
   TaskHandle_t *tskLora;
   TaskHandle_t *tskWeb;
 
-  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 0, tskLora, 0); 
-  xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, tskWeb, 0);
+  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 0, tskLora, CORE_LORA); 
+  xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, tskWeb, CORE_WEB);
 }
 void loop() {
   

@@ -28,15 +28,17 @@ String Message::toSerialJson()
 
 Message::Message() {
     type = TEXT;
-    senderId = 0x0;
+    payload = String();
+    senderId = 0x00;
 }
+
 
 Message::Message(uint8_t *data) {
     JsonDocument json;
 
     deserializeJson(json, data);
 
-    payload = json["Payload"];
+    payload = String((const char *)json["Payload"]);
     
     senderId = json["NodeID"];
 
@@ -94,13 +96,14 @@ void onWsEvent(
         DBG_PRINTLN();
 
         
-        xQueueSend(qToLora, (void *)&rx_message, (TickType_t) 0);     // send the message pointer to the lora task               // let lora task know there's something to send
+        xQueueSend(qToLora, (void *)&rx_message, (TickType_t) 0);     // send the message pointer to the lora task
         return;
     }
 }
     /// @brief Web task function
     void webTask( void * )
     {
+        initWebServer();    // initialize the hardware
         while (true) {
             if (0 < uxQueueMessagesWaiting(qFromLora)) {       // if message is available
                 

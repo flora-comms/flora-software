@@ -46,7 +46,14 @@ public:
     uint8_t senderId;
     uint8_t packetId;
     uint8_t ttl;
-    char *payload;
+    String payload;
+
+    /// @brief Default constructor
+    LoraPacket();
+
+    /// @brief Converts a byte array to a lora packet
+    /// @param bytes Buffer containing the payload bytes
+    LoraPacket(uint8_t *bytes);
 
     /// @brief Converts a queue message into a lora packet
     /// @param msg The QueueMessage object to convert into a Lora Packet.
@@ -60,11 +67,6 @@ public:
     /// @brief Converts a lora packet into a csv string that can be written to history.csv in the sd card
     /// @return The SD-compatible formatted csv string.
     String toSdFormat();
-
-    /// @brief Converts a byte array to a lora packet
-    /// @param bytes Buffer containing the payload bytes
-    /// @return The length of the packet payload.
-    uint16_t fromBytes(uint8_t *bytes, uint16_t len);
 
     /// @brief Converts a lora packet to a byte string
     /// @param bytes Pointer to buffer to read into
@@ -84,6 +86,6 @@ void onLoraIrq(void);
 void loraTask( void *pvParameters);
 
 /// @brief Initilizes Lora stuff
-LoraError initLora(SX1262 *radio);
+LoraError initLora();
 
 #endif

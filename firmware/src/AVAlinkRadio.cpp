@@ -13,6 +13,14 @@ SX1262 radio = new Module( // lora radio
     lora_spi,
     SPISettings(2000000, MSBFIRST, SPI_MODE0));
 
+
+LoraPacket::LoraPacket() {
+    destination = 0x00;
+    packetId = 0x00;
+    ttl = 0x00;
+    senderId = 0x00;
+    payload = String();
+}
 /// @brief Converts a queue messagef into a lora packet. consumes the message.
 /// @param msg The QueueMessage object to convert into a Lora Packet.
 LoraError LoraPacket::fromMsg(Message *msg) 
@@ -49,27 +57,26 @@ String LoraPacket::toSdFormat() {
 }
 
 uint16_t LoraPacket::toBytes(uint8_t *bytes) {
-    *bytes++ = destination;     // byte 0
-    *bytes++ = senderId;        // byte 1
-    *bytes++ = packetId;
-    *bytes++ = ttl;
-    uint16_t length = 0;
-    while (*payload != '\0') {       // while still valid chars
-        *bytes++ = payload[length++];
+    uint16_t len = 0;
+    bytes[len++] = destination;     // byte 0
+    bytes[len++] = senderId;        // byte 1
+    bytes[len++] = packetId;        // byte 2
+    bytes[len++] = ttl;             // byte 3
+    const char *cstr = payload.c_str();
+    while (*cstr != '\0') {
+        bytes[len++] = *cstr++;
     }
-    *bytes = '\0';       // get total packet length
-    return length;
+    len++;
+    bytes[len] = '\0';       // get total packet length
+    return len;
 }
 
-uint16_t LoraPacket::fromBytes(uint8_t *bytes, uint16_t len) {
-    destination = *bytes;
-    senderId = *(++bytes);
-    packetId = *(++bytes);
-    ttl = *(++bytes);
-    uint16_t length = 0;
-    payload = (const char)bytes;
-    payload[++length] = '\0';
-    return length;
+LoraPacket::LoraPacket(uint8_t *bytes) {
+    destination = *bytes++;
+    senderId = *bytes++;
+    packetId = *bytes++;
+    ttl = *bytes++;
+    payload = String((char *)bytes);
 }
 
 
@@ -90,6 +97,8 @@ void loraTask( void * )
 
     LoraState loraState = LORA_RX;
 
+    initLora();     // initialize hardware
+    
     // Start Recieve
     radio.startReceive();
 
@@ -121,15 +130,9 @@ void loraTask( void * )
                 {
                     DBG_PRINTLN("Lora RX failure");
                 }
-                else
-                {
-                    DBG_PRINTLN("Recieved LoRa data:");
-                    DBG_PRINTLN(*rx_data);
-                    DBG_PRINTLN("");
-                }
 
-                LoraPacket packet;
-                packet.fromBytes(rx_data);
+                LoraPacket packet(rx_data);
+
 
                 // TODO lora protocol layer - repeating action... see docs
                 if (packet.needsRepeating()) {
@@ -143,6 +146,8 @@ void loraTask( void * )
 
                 xQueueSend(qFromLora, &forWeb, 0);   // send to the web server through the queue
 
+                float rssi = radio.getRSSI();
+                DBG_PRINTF("Rx Lora Data {\n\tSenderId: %i,\n\tPayload: \"%s\",\n\tRSSI: %.2f\n}", packet.senderId, packet.payload, rssi);
                 radio.startReceive();       // start rx again.
             }
         }
@@ -169,7 +174,7 @@ void loraTask( void * )
             // DBG_PRINTLN();
             loraState = LORA_TX;
             txState = radio.startTransmit(bytes, length);
-            DBG_PRINTF("Tx state: %i", txState);
+            DBG_PRINTF("\nTx state: %i\n", txState);
         } else {
             vTaskDelay((TickType_t) 1);
         }
@@ -177,11 +182,11 @@ void loraTask( void * )
 }
 
 /// @brief Initilizes Lora stuff
-LoraError initLora(SX1262 *radio)
+LoraError initLora()
 {
     lora_spi.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
     DBG_PRINT("[SX1262] Initializing ... ");
-    int status = radio->begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
+    int status = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
     if (status == RADIOLIB_ERR_NONE)
     {
         DBG_PRINT("success!\n");
@@ -191,10 +196,10 @@ LoraError initLora(SX1262 *radio)
         DBG_PRINTF("Failed: code %i\n", status);
         return LORA_ERR_INIT;
     }
-    radio->setCurrentLimit(60.0);
-    radio->setDio2AsRfSwitch(true);
-    radio->explicitHeader();
-    radio->setCRC(2);
-    radio->setDio1Action(onLoraIrq);
+    radio.setCurrentLimit(60.0);
+    radio.setDio2AsRfSwitch(true);
+    radio.explicitHeader();
+    radio.setCRC(2);
+    radio.setDio1Action(onLoraIrq);
     return LORA_ERR_NONE;
 }

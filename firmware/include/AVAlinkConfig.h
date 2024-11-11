@@ -70,4 +70,10 @@
 #define LORA_PREAMB 16 // symbols
 #endif
 
+// S3 processor options
+
+#define CORE_LORA 0
+
+#define CORE_WEB 0
+
 #endif
