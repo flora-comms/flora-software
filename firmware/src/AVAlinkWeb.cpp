@@ -113,7 +113,7 @@ void onWsEvent(
 
                 String data = rx_msg->toSerialJson();   // create serialized json object
 
-                delete(rx_msg);         // delete the memory from the heap
+                delete(rx_msg);
 
                 ws.textAll(data);       // send the data over the web socket to all the clients
 

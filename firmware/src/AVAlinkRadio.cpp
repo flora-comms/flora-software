@@ -30,6 +30,7 @@ LoraError LoraPacket::fromMsg(Message *msg)
     payload = msg->payload;
     ttl = MAX_LORA_TTL;             // set max ttl
     senderId = msg->senderId;
+    delete(msg);
     return LORA_ERR_NONE;
 }
 
@@ -98,7 +99,7 @@ void loraTask( void * )
     LoraState loraState = LORA_RX;
 
     initLora();     // initialize hardware
-    
+
     // Start Recieve
     radio.startReceive();
 
@@ -157,11 +158,9 @@ void loraTask( void * )
             
             xQueueReceive(qToLora, &txMsg, 0);
             LoraPacket packet;
-            packet.fromMsg(txMsg);
+            packet.fromMsg(txMsg);   // deletes the message from the heap
 
             DBG_PRINTF("Web Server Message recieved: %s", packet.payload);
-
-            delete(txMsg); // delete from heap.
 
             
             uint8_t bytes[256] = { 0 }; // TODO make sure web app doesn't let people send messages longer than 251 chars.
