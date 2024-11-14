@@ -33,6 +33,8 @@ extern bool RxMsgAvailable;
 extern bool TxMsgAvaialble;
 extern SPIClass sd_spi; // SPI2 sd card spi bus
 
+
+
 // ---- TYPEDEF ----- //
 
 enum WebError {
@@ -91,5 +93,9 @@ void webTask( void * );
 
 /// @brief Initializes web server stuff
 WebError initWebServer();
+
+// SD Function prototypes
+String JSONtoSTRING(String json);
+void appendHistory(String fileName, Message *Message);
 
 #endif
