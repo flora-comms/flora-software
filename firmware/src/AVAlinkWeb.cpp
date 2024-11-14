@@ -150,7 +150,6 @@ WebError initWebServer() // Initializes web server stuff
 }
 
 void appendHistory(String fileName, Message *message) {
-
   String payload = message->payload;
   int nodeID = message->senderId;
   int SOS;
