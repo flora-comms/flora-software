@@ -61,6 +61,10 @@ public:
   /// @param data The data string to write into.
   /// @return A Web Error status code.
   String toSerialJson();
+
+  /// @brief Appends the payload to a file.
+  /// @param filename the filename to be appended to.
+  void appendHistory(String filename);
 };
 
 /// @brief Web socket event handler
@@ -78,8 +82,5 @@ void webTask(void *);
 
 /// @brief Initializes web server stuff
 WebError initWebServer();
-
-// SD Function prototypes
-void appendHistory(String fileName, Message *Message);
 
 #endif

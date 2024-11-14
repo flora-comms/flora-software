@@ -69,7 +69,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     DBG_PRINT("WS Data received: ");
 
     // Write Message to SD card
-    appendHistory("/data/history.csv", rx_message);
+    rx_message->appendHistory("/data/history.csv");
 
     for (int i = 0; i < len; i++) {
       DBG_PRINT((char)data[i]);
@@ -77,8 +77,10 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
 
     DBG_PRINTLN();
 
-    xQueueSend(qToLora, (void *)&rx_message,
-               (TickType_t)0); // send the message pointer to the lora task
+    xQueueSend(     // send the message pointer to the lora task
+        qToLora,
+        (void *)&rx_message,
+        (TickType_t)0);
     return;
   }
 }
@@ -150,11 +152,10 @@ WebError initWebServer() // Initializes web server stuff
   return WEB_ERR_NONE;
 }
 
-void appendHistory(String fileName, Message *message) {
-  String payload = message->payload;
-  int nodeID = message->senderId;
+void Message::appendHistory(String fileName) {
+  int nodeID = senderId;
   int SOS;
-  if (message->type == TEXT) {
+  if (type == TEXT) {
     SOS = 0;
   } else {
     SOS = 1;
