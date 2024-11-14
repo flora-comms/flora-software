@@ -153,15 +153,9 @@ WebError initWebServer() // Initializes web server stuff
 }
 
 void Message::appendHistory(String fileName) {
-  int nodeID = senderId;
-  int SOS;
-  if (type == TEXT) {
-    SOS = 0;
-  } else {
-    SOS = 1;
-  }
-  String combinedString = "\"" + payload + "\"" + "," + String(nodeID) + "," +
-                          String(SOS); // "payload",nodeID,SOS
+
+  String combinedString = "\"" + payload + "\"" + "," + String(senderId) + "," +
+                          String(type); // "payload",nodeID,SOS
 
   file = SD.open(fileName, FILE_APPEND);
 
