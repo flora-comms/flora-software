@@ -69,7 +69,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     DBG_PRINT("WS Data received: ");
 
     // Write Message to SD card
-    appendHistory("/history.csv", rx_message);
+    appendHistory("/data/history.csv", rx_message);
 
     for (int i = 0; i < len; i++) {
       DBG_PRINT((char)data[i]);
