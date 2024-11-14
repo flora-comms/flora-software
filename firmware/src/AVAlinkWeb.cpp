@@ -67,7 +67,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     Message *rx_message = new Message(data);
 
     DBG_PRINT("WS Data received: ");
-    
+
     // Write Message to SD card
     appendHistory("/history.csv", rx_message);
 
@@ -80,8 +80,6 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     xQueueSend(qToLora, (void *)&rx_message,
                (TickType_t)0); // send the message pointer to the lora task
     return;
-
-
   }
 }
 /// @brief Web task function
@@ -164,7 +162,7 @@ void appendHistory(String fileName, Message *message) {
   String combinedString = "\"" + payload + "\"" + "," + String(nodeID) + "," +
                           String(SOS); // "payload",nodeID,SOS
 
-  file = SD.open(fileName, FILE_WRITE);
+  file = SD.open(fileName, FILE_APPEND);
 
   if (!file) {
     DBG_PRINTLN("Failed to open file for writing!");
