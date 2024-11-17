@@ -4,8 +4,21 @@
 #define AVALINK_CONFIG_H
 
 #include <ConfigOptions.h>
+#include <ArduinoJson.h>
+#include <ESPAsyncWebServer.h>
+#include <ESPmDNS.h>
+#include <FreeRTOS.h>
+#include <SD.h>
+#include <WiFi.h>
+#include <SPI.h>
+#include <RadioLib.h>
 
-
+// EVENT BITS
+#define EVENTBIT_LORA_Q 0x1         // 00000001
+#define EVENTBIT_LORA_TX 0x2        // 00000010
+#define EVENTBIT_LORA_RX 0x4        // 00000100
+#define EVENTBIT_LORA_CAD 0x8       // 00001000
+#define EVENTBIT_WEB_READY  0x10    // 00010000
 // DEBUGGING
 
 #ifdef DEBUG
@@ -57,7 +70,13 @@
 
 #endif
 
-// Lora
+// S3 processor options
+
+#define CORE_LORA tskNO_AFFINITY
+
+#define CORE_WEB tskNO_AFFINITY
+
+// LORA CONFIG
 
 #ifdef LORA_DEV_SX1262_HF
 
@@ -70,10 +89,24 @@
 #define LORA_PREAMB 16 // symbols
 #endif
 
-// S3 processor options
+#define ACKNOWLEDGE_WINDOW_SIZE 16      // number of messages that we'll keep track of in terms of 
+#define RETRY_THRESHOLD         1       // The index in the LogList when a message should be retried.
 
-#define CORE_LORA 0
+// WEB CONFIG
+#define HISTORY_FILENAME "/data/history.csv"
 
-#define CORE_WEB 0
+// GLOBAL VARIABLES
 
+extern QueueHandle_t    qToMesh;       // the queue from the web task to the lora task
+extern QueueHandle_t    qToWeb;     // the queue from the lora task to the web task
+extern bool             bApIsUp;
+extern SX1262 radio;
+extern SPIClass sdSPI;
+extern SPIClass loraSPI;
+extern EventGroupHandle_t xLoraEventGroup;
+extern AsyncWebServer server;
+extern AsyncWebSocket ws;
+extern RadioLibTime_t xMaxTimeOnAir;
+extern TaskHandle_t xLoraTask;
+extern TaskHandle_t xWebTask;
 #endif

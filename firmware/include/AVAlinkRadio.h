@@ -14,78 +14,52 @@ AVAlink Layer 1 and 2 interfacing
 #define AVALINK_RADIO_H
 #pragma once
 
-#include <RadioLib.h>
-#include <AVAlinkWeb.h>
+#include <AVAlinkUtils.h>
 
-// ----- GLOBALS ----- //
 
-extern volatile bool operationDone;
-extern int txState;
-extern SPIClass lora_spi;
-extern SX1262 radio;
 
-// ---- TYPEDEFS ----- //
+// globals
 
-// Errors possible in lora
-enum LoraError {
-    LORA_ERR_NONE,
-    LORA_ERR_INIT,
-};
+extern LogList* pxHistoryLogs[256];
 
-enum LoraState
-{
-    LORA_TX,
-    LORA_RX,
-    LORA_CAD,
-};
-
-class LoraPacket
-{
-public:
-    uint8_t destination;
-    uint8_t senderId;
-    uint8_t packetId;
-    uint8_t ttl;
-    String payload;
-
-    /// @brief Default constructor
-    LoraPacket();
-
-    /// @brief Converts a byte array to a lora packet
-    /// @param bytes Buffer containing the payload bytes
-    LoraPacket(uint8_t *bytes);
-
-    /// @brief Converts a queue message into a lora packet
-    /// @param msg The QueueMessage object to convert into a Lora Packet.
-    LoraError fromMsg(Message *msg);
-
-    /// @brief Converts a lora packet into a que message
-    /// @param msg The Queue Message object to write into
-    /// @return A QParseError status code.
-    LoraError toMsg(Message *msg);
-
-    /// @brief Converts a lora packet into a csv string that can be written to history.csv in the sd card
-    /// @return The SD-compatible formatted csv string.
-    String toSdFormat();
-
-    /// @brief Converts a lora packet to a byte string
-    /// @param bytes Pointer to buffer to read into
-    /// @return Length of the packet.
-    uint16_t toBytes(uint8_t *bytes);
-
-    /// @brief determines if packet needs repeating
-    bool needsRepeating();
-};
-
-/// @brief Lora interrupt handler
-void onLoraIrq(void);
+/// @brief Turns on the AVAlink Radio
+void initLora();
 
 /// @brief Lora task function
-/// @param qFromWeb Recieves messages from Web task
-/// @param qToWeb Sends messages to web task.
-void loraTask( void *pvParameters);
+void loraTask(void * pvParameters);
 
-/// @brief Initilizes Lora stuff
-LoraError initLora();
+/// @brief Radio starts recieving
+void startRx();
 
+/// @brief Handles a receive event
+void handleRx();
+
+/// @brief Begins transmitting a message
+/// @param msg The message to transmit
+/// @return The status of the transmission
+int16_t startTx(Message *msg);
+
+/// @brief Handles a TX complete event
+void handleTx();
+
+void startCad();
+
+/// @brief Handles a completed CAD event
+/// @return The CAD results
+int16_t handleCad();
+
+/// @brief Checks if a message needs to be repeated over the LoRa network
+/// @param msg The message to check
+/// @param log The LogList to check the message against
+/// @return True if the message needs repeating. False if it does not.
+bool needsRepeating(Message *msg);
+
+/// @brief LoRa RX interrupt handler
+static void onRxIrq(void);
+
+/// @brief Lora TX interrupt handler
+static void onTxIrq(void);
+
+/// @brief LoRa CAD interrupt handler
+static void onCadIrq(void);
 #endif

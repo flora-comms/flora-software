@@ -13,19 +13,14 @@ To configure the firmware, follow the instructions in lib/AVAlinkConfig/ConfigOp
 
 // ---------------- INCLUDES ---------------- //
 
-#ifdef ENV_PLATFORMIO
-#include <Arduino.h>
-#endif
-
 #include <AVAlink.h>
 
 // ---------------- CLASSES ---------------- //
 
 
 // ---------------- GLOBALS ---------------- //
-
-volatile bool lora_flag = false;
-int           tx_state = RADIOLIB_ERR_NONE;
+TaskHandle_t xLoraTask;
+TaskHandle_t xWebTask;
 // ---------------- PROTOTYPES ---------------- //
 
 
@@ -35,11 +30,8 @@ void setup() {
   
   initAvalink(); // initialize hardware
 
-  TaskHandle_t *tskLora;
-  TaskHandle_t *tskWeb;
-
-  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 0, tskLora, CORE_LORA); 
-  xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, tskWeb, CORE_WEB);
+  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 0, &xLoraTask, CORE_LORA); 
+  xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, &xWebTask, CORE_WEB);
 }
 void loop() {
   

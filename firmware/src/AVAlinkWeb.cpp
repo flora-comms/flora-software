@@ -1,52 +1,9 @@
 #include "AVAlinkWeb.h"
 
 // init globals
-QueueHandle_t qFromLora = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
-QueueHandle_t qToLora = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 AsyncWebServer server(80);
 AsyncWebSocket ws(WEBSOCKET_ENDPOINT); // websocket
-
-bool RxMsgAvailable = false;
-bool TxMsgAvaialble = false;
-SPIClass sd_spi(FSPI); // SPI2 sd card spi bus
-File file;             // File object for accessing history.csv on SD card
-
-String Message::toSerialJson() {
-  JsonDocument json;
-  String data;
-  json["Payload"] = payload;
-  json["NodeID"] = senderId;
-  if (type == TEXT) {
-    json["SOS"] = 0;
-  } else {
-    json["SOS"] = 1;
-  }
-
-  serializeJson(json, data);
-  return data;
-}
-
-Message::Message() {
-  type = TEXT;
-  payload = String();
-  senderId = 0x00;
-}
-
-Message::Message(uint8_t *data) {
-  JsonDocument json;
-
-  deserializeJson(json, data);
-
-  payload = String((const char *)json["Payload"]);
-
-  senderId = json["NodeID"];
-
-  if (json["SOS"] == 0) {
-    type = TEXT;
-  } else {
-    type = SOS;
-  }
-}
+uint8_t currentId = 0;
 
 /// @brief Web socket event handler
 /// @param server the web socket
@@ -63,8 +20,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     DBG_PRINTLN("Client disconnected");
   } else if (type == WS_EVT_DATA) {
     ws.textAll(data, len);
-
-    Message *rx_message = new Message(data);
+    Message *rx_message = new Message(data, currentId++);
 
     DBG_PRINT("WS Data received: ");
 
@@ -78,32 +34,28 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     DBG_PRINTLN();
 
     xQueueSend(     // send the message pointer to the lora task
-        qToLora,
+        qToMesh,
         (void *)&rx_message,
         (TickType_t)0);
     return;
   }
 }
+
 /// @brief Web task function
 void webTask(void *) {
   initWebServer(); // initialize the hardware
   while (true) {
-    if (0 < uxQueueMessagesWaiting(qFromLora)) { // if message is available
+    xEventGroupWaitBits(xLoraEventGroup, EVENTBIT_WEB_READY, pdTRUE, pdFALSE, portMAX_DELAY);
+    Message *rx_msg; // create pointer to message object
 
-      Message *rx_msg; // create pointer to message object
+    xQueueReceive(qToWeb, &rx_msg, 0); // read in mesage pointer from queue
 
-      xQueueReceive(qFromLora, &rx_msg, 0); // read in mesage pointer from queue
+    String data = rx_msg->toSerialJson(); // create serialized json object
 
-      String data = rx_msg->toSerialJson(); // create serialized json object
+    ws.textAll(data); // send the data over the web socket to all the clients
 
-      delete (rx_msg); // delete the memory from the heap
-
-      ws.textAll(data); // send the data over the web socket to all the clients
-
-      // write to sd card
-    } else {
-      vTaskDelay(1); // delay five ms
-    }
+    // write to sd card
+    rx_msg->appendHistory(HISTORY_FILENAME);
   };
 }
 WebError initWebServer() // Initializes web server stuff
@@ -122,17 +74,6 @@ WebError initWebServer() // Initializes web server stuff
   DBG_PRINTLN("Access Point IP address: ");
   DBG_PRINTLN(WiFi.softAPIP());
 
-
-  // Setup SPI busses
-  sd_spi.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-
-  if (!SD.begin(SD_CS)) {
-    DBG_PRINTLN("Failed to mount SD card!");
-    return WEB_ERR_SD;
-  } else {
-    DBG_PRINTLN("SD card mounted successfully.");
-  }
-
   server.begin();
   DBG_PRINTLN("Web server started!");
 
@@ -149,23 +90,7 @@ WebError initWebServer() // Initializes web server stuff
 
   // add websocket service
   ws.onEvent(onWsEvent);
+
+  currentId = 0;
   return WEB_ERR_NONE;
-}
-
-void Message::appendHistory(String fileName) {
-
-  String combinedString = "\"" + payload + "\"" + "," + String(senderId) + "," +
-                          String(type); // "payload",nodeID,SOS
-
-  file = SD.open(fileName, FILE_APPEND);
-
-  if (!file) {
-    DBG_PRINTLN("Failed to open file for writing!");
-    return;
-  } else {
-    DBG_PRINTLN("Writing to SD card...");
-    DBG_PRINTLN("");
-    file.println(combinedString);
-    file.close();
-  }
 }

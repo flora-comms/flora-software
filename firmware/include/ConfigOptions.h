@@ -27,6 +27,9 @@ Uncomment define for the IDE uses. MAKE SURE ONLY ONE IS UNCOMMENTED
 #define ENV_PLATFORMIO
 // #define ENV_ARDUINO
 
+#ifdef ENV_PLATFORMIO
+#include <Arduino.h>
+#endif
 /*
 
 ================================
