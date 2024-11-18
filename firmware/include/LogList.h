@@ -62,8 +62,6 @@ public:
     /// @param packetId The packetId to find
     /// @return True if the packetId is in the list. False if the packet id does not exist
     bool checkId(uint8_t packetId);
-
-
 };
 
 #endif  // LOGLIST_H

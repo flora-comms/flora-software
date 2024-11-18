@@ -17,7 +17,9 @@ void LogList::update(Message *message) {
     _len++;
 
     // now that the list has the new message on top, see if we need to retry any messages
-    checkForRetries();
+    if (_len > RETRY_THRESHOLD) {
+        checkForRetries();
+    }
 
     // make sure the list isn't too long
     while (_len >= ACKNOWLEDGE_WINDOW_SIZE) {
@@ -53,7 +55,7 @@ bool LogList::checkId(uint8_t packetId) {
 
 void LogList::checkForRetries() {
     uint8_t index = 0;
-    LogEntry *pCheckEntry = _root;  // start at the top of the list
+    LogEntry* pCheckEntry = _root;  // start at the top of the list
     while (index != RETRY_THRESHOLD) {  // while we havent reached the index threshold
         pCheckEntry = pCheckEntry->_next;   // go to the next index
         index++;

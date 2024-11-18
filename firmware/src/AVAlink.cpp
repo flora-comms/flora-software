@@ -3,7 +3,7 @@
 SPIClass sdSPI(FSPI);
 QueueHandle_t qToWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qToMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
-EventGroupHandle_t xLoraEventGroup = xEventGroupCreate();
+EventGroupHandle_t xAvalinkEventGroup = xEventGroupCreate();
 bool bApIsUp = true;
 
 /// @brief Initializes AVAlink hardware

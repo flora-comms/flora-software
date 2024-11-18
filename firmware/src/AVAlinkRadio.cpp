@@ -32,8 +32,8 @@ void initLora() {
     radio.explicitHeader();
     radio.setCRC(2);
 
-    xLoraEventGroup = xEventGroupCreate();
-    if (xLoraEventGroup == NULL)
+    xAvalinkEventGroup = xEventGroupCreate();
+    if (xAvalinkEventGroup == NULL)
     {
         DBG_PRINTLN("Lora Event group creation was unsuccessful");
     }
@@ -58,16 +58,19 @@ void loraTask(void * pvParameters)
 
     EventBits_t xLoraEventBits;
 
+    xEventGroupClearBits(xAvalinkEventGroup, 0xFF); // clear all bits
+
     while (true)
     {
         // wait for notification from radio or web server
+        DBG_PRINTLN("LoRa begin waiting...");
         xLoraEventBits = xEventGroupWaitBits(
-            xLoraEventGroup, 
+            xAvalinkEventGroup, 
             (EventBits_t)(EVENTBIT_LORA_RX | EVENTBIT_LORA_TX | EVENTBIT_LORA_Q),
             pdFALSE,
             pdFALSE,
             portMAX_DELAY);   // Wait for notification from webserver or radio
-
+        DBG_PRINTF("LoRa Wakeup! Event bits: %i", xLoraEventBits);
         if (xLoraEventBits & EVENTBIT_LORA_TX)             // if a tx has finished
         {
             handleTx();                                    // handle the tx finished, start rxing again
@@ -85,16 +88,20 @@ void loraTask(void * pvParameters)
 
             xQueueReceive(qToMesh, &pxTxMsg, 0);
 
+            DBG_PRINTF("Message from web server: %s", pxTxMsg->payload);
             // if the queue is empty, 
             if(uxQueueMessagesWaiting(qToMesh) == 0) {
-                xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_Q); // clear the queue event bit
+                xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_Q); // clear the queue event bit
             }
 
+            DBG_PRINTLN("Starting Tx...");
             uint16_t status = startTx(pxTxMsg);
 
             if (status != RADIOLIB_ERR_NONE) {
                 DBG_PRINTF("Tx Failure - Code: %i", status);
                 startRx();
+            } else {
+                DBG_PRINT("\tsuccess\n");
             }
         }
 
@@ -102,12 +109,14 @@ void loraTask(void * pvParameters)
 }
 
 void startRx() {
-    xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_RX);    // clear the event
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);    // clear the event
     radio.setDio1Action(onRxIrq);                               // set the irq
     radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE);        // start in single recieve mode
 }
 
 void handleRx() {
+    radio.clearIrqFlags(RADIOLIB_IRQ_RX_DONE);   // clear the interrupt
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);
     int status;
     uint8_t rx_data[256] = {0};          // create buffer of zeros
     status = radio.readData(rx_data, 0); // read in data
@@ -117,21 +126,27 @@ void handleRx() {
     }
 
     Message *pxRxMsg = new Message(rx_data);
+    DBG_PRINTF("LoRa Message recieved: %s", pxRxMsg->payload);
+    DBG_PRINTF("SenderId: %i, PacketId: %i", pxRxMsg->senderId, pxRxMsg->packetId);
 
     if (needsRepeating(pxRxMsg)) // if this message needs repeating
     { 
+        DBG_PRINTLN("Message needs repeating");
         // write to sd card if necessary
         if (!bApIsUp) {
             pxRxMsg->appendHistory(HISTORY_FILENAME);
         } else {
             xQueueSend(qToWeb, &pxRxMsg, 0); // send to the web server through web server queue
-            xEventGroupSetBits(xLoraEventGroup, EVENTBIT_WEB_READY);
+            xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_WEB_READY);
         }
 
+        
         xQueueSend(qToMesh, &pxRxMsg, 0);   // send to lora mesh queue for sending when ready
 
         // raise lora Queue event
-        xEventGroupSetBits(xLoraEventGroup, EVENTBIT_LORA_Q);
+        xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_LORA_Q);
+    } else {
+        DBG_PRINTLN("No rpt");
     }
     return;
 }
@@ -157,42 +172,38 @@ int16_t startTx(Message *msg) {
     RadioLibTime_t xMaxTimeOnAir = radio.getTimeOnAir(255) / 1000;
 
     do {
-        long lDelay = xMaxTimeOnAir * random(1,5);
+        long lDelay = xMaxTimeOnAir * random(1, LORA_TX_WAIT_INTERVAL_MAX);
 
         startRx();
 
-        EventBits_t xWaitResult = xEventGroupWaitBits(xLoraEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS(lDelay));
+        EventBits_t xWaitResult = xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS(lDelay));
 
         if (xWaitResult & EVENTBIT_LORA_RX) {
             handleRx();
+            DBG_PRINTLN("Channel in use... Waiting again");
             bChannelFree = false;
-        } else {
-            startCad();
-            xEventGroupWaitBits(xLoraEventGroup, EVENTBIT_LORA_CAD, pdTRUE, pdTRUE, pdMS_TO_TICKS(100)); // should not actually timeout
-            int16_t iCadResult = handleCad();
-            bChannelFree = (iCadResult == RADIOLIB_CHANNEL_FREE);
         }
     } while (!bChannelFree);
 
     radio.setDio1Action(onTxIrq);
-    xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_TX);
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_TX);
     return radio.startTransmit(bytes, length);
 }
 
 void handleTx() {
     // clear the event
-    xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_TX);
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_TX);
     // start recieving again
     startRx();
 }
 
 void startCad() {
-    xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_CAD);
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_CAD);
     radio.startChannelScan();
 }
 
 int16_t handleCad() {
-    xEventGroupClearBits(xLoraEventGroup, EVENTBIT_LORA_CAD);
+    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_CAD);
     return radio.getChannelScanResult();
 }
 
@@ -214,7 +225,7 @@ static void onRxIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xLoraEventGroup,
+        xAvalinkEventGroup,
         EVENTBIT_LORA_RX,
         &xHigherPriorityTaskWoken
     );
@@ -236,7 +247,7 @@ static void onTxIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xLoraEventGroup,
+        xAvalinkEventGroup,
         EVENTBIT_LORA_TX,
         &xHigherPriorityTaskWoken);
     /* Was the message posted successfully? */
@@ -257,7 +268,7 @@ static void onCadIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xLoraEventGroup,
+        xAvalinkEventGroup,
         EVENTBIT_LORA_CAD,
         &xHigherPriorityTaskWoken);
     /* Was the message posted successfully? */

@@ -37,15 +37,17 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
         qToMesh,
         (void *)&rx_message,
         (TickType_t)0);
+    xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_LORA_Q);
     return;
   }
 }
 
 /// @brief Web task function
 void webTask(void *) {
+  bApIsUp = true;
   initWebServer(); // initialize the hardware
   while (true) {
-    xEventGroupWaitBits(xLoraEventGroup, EVENTBIT_WEB_READY, pdTRUE, pdFALSE, portMAX_DELAY);
+    xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_WEB_READY, pdTRUE, pdFALSE, portMAX_DELAY);
     Message *rx_msg; // create pointer to message object
 
     xQueueReceive(qToWeb, &rx_msg, 0); // read in mesage pointer from queue
