@@ -28,6 +28,9 @@ Uncomment define for the IDE uses. MAKE SURE ONLY ONE IS UNCOMMENTED
 #define ENV_PLATFORMIO
 // #define ENV_ARDUINO
 
+#ifdef ENV_PLATFORMIO
+#include <Arduino.h>
+#endif
 /*
 
 ================================
@@ -68,11 +71,29 @@ Options for Hardware
 
 // ----- BOARD OPTIONS ------ //
 
-// #define LILYGO_T3_S3_V1_2
+//#define LILYGO_T3_S3_V1_2
 #define PETAL_V0_0
 
 // ------ TRANSCIEVER DEVICE OPTIONS ----- //
 
 #define LORA_DEV_SX1262_HF
+
+// ------ LORA MODE OPTIONS ------- //
+
+#define LORA_MODE_SHORT_TURBO // 21.88 kbps
+
+// #define LORA_MODE_SHORT_FAST     // 10.94 kbps
+
+// #define LORA_MODE_MED_FAST       // 3.52 kbps
+
+// #define LORA_MODE_MED_SLOW       // 1.95 kbps
+
+// #define LORA_MODE_LONG_FAST      // 1.07 kbps
+
+// #define LORA_MODE_LONG_MOD       // 0.34 kbps
+
+// #define LORA_MODE_LONG_SLOW      // 0.18 kbps
+
+// #define LORA_MODE_V_LONG_SLOW    // 0.09 kbps
 
 #endif

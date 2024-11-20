@@ -14,25 +14,11 @@ AVAlink web server interface
 #define AVALINK_WEB_H
 #pragma once
 
-#include <AVAlinkConfig.h>
-#include <ArduinoJson.h>
-#include <ESPAsyncWebServer.h>
-#include <ESPmDNS.h>
-#include <FreeRTOS.h>
-#include <SD.h>
-#include <WiFi.h>
+#include <AVAlinkUtils.h>
 
 // ---- GLOBALS ---- //
 
-extern QueueHandle_t
-    qFromLora; // cueue handles. hold 10 pointers to message objects each
-extern QueueHandle_t qToLora;
-extern AsyncWebServer server; // web server on port 80
-extern AsyncWebSocket ws;     // websocket
-
-extern bool RxMsgAvailable;
-extern bool TxMsgAvaialble;
-extern SPIClass sd_spi; // SPI2 sd card spi bus
+extern uint8_t currentId;   // the current packet id
 
 // ---- TYPEDEF ----- //
 
@@ -40,32 +26,9 @@ enum WebError { WEB_ERR_NONE, WEB_ERR_SD, WEB_ERR_WIFI_AP };
 
 enum MsgType { TEXT, SOS };
 
-/// @brief Message class. Intermediate between a web chat and a lora packet for
-/// use by the web task to pass around.
-class Message {
-public:
-  MsgType type;     // the message type
-  String payload;   // message payload string
-  uint8_t senderId; // the sender ID (0-255). 0 reserved for gateway
+enum MsgSource { LORA, JSON };
 
-  /// @brief Default Message constructor
-  Message();
 
-  /// @brief Converts a serial json message  into a Message type.
-  /// @param data The data buffer containing the serial data
-  /// @return Web error status code
-  Message(uint8_t *data);
-
-  /// @brief Converts a the message type into a JSON string ready for sending
-  /// over the web socket.
-  /// @param data The data string to write into.
-  /// @return A Web Error status code.
-  String toSerialJson();
-
-  /// @brief Appends the payload to a file.
-  /// @param filename the filename to be appended to.
-  void appendHistory(String filename);
-};
 
 /// @brief Web socket event handler
 /// @param socket the web socket
