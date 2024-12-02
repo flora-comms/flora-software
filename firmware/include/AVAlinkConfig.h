@@ -168,7 +168,6 @@ extern SPIClass             loraSPI;
 extern EventGroupHandle_t   xAvalinkEventGroup;
 extern AsyncWebServer       server;
 extern AsyncWebSocket       ws;
-extern RadioLibTime_t       xMaxTimeOnAir;
 extern TaskHandle_t         xLoraTask;
 extern TaskHandle_t         xWebTask;
 #endif

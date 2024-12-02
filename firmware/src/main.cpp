@@ -30,7 +30,7 @@ void setup() {
   
   initAvalink(); // initialize hardware
 
-  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 0, &xLoraTask, CORE_LORA); 
+  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 1, &xLoraTask, CORE_LORA); 
   xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, &xWebTask, CORE_WEB);
 }
 void loop() {

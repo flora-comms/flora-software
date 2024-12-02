@@ -39,7 +39,7 @@ FIRMWARE
 
 Variables for firmware configuration
 */
-#define WIFI_SSID "FloraNet" // WiFi network name
+#define WIFI_SSID "FloraNet Noyse" // WiFi network name
 #define WEBSERVER_DNS                                                          \
   "floranet" // puts domain at "http://{WEBSERVER_DNS}.local"
 #define WEBSOCKET_ENDPOINT                                                     \
@@ -80,7 +80,7 @@ Options for Hardware
 
 // ------ LORA MODE OPTIONS ------- //
 
-#define LORA_MODE_SHORT_TURBO // 21.88 kbps
+//#define LORA_MODE_SHORT_TURBO // 21.88 kbps
 
 // #define LORA_MODE_SHORT_FAST     // 10.94 kbps
 
@@ -88,7 +88,7 @@ Options for Hardware
 
 // #define LORA_MODE_MED_SLOW       // 1.95 kbps
 
-// #define LORA_MODE_LONG_FAST      // 1.07 kbps
+#define LORA_MODE_LONG_FAST      // 1.07 kbps
 
 // #define LORA_MODE_LONG_MOD       // 0.34 kbps
 

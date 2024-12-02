@@ -166,18 +166,18 @@ int16_t startTx(Message *msg) {
 
     uint16_t length = msg->toLoraPacket(bytes);
 
-    bool bChannelFree = true;
-
     // calculate max time on air per pxRxMsg in ms
-    RadioLibTime_t xMaxTimeOnAir = radio.getTimeOnAir(255) / 1000;
+    RadioLibTime_t xMaxTimeOnAir = radio.getTimeOnAir(250) / 1000;
+    bool bChannelFree;
 
     do {
+        bChannelFree = true;
         long lDelay = xMaxTimeOnAir * random(1, LORA_TX_WAIT_INTERVAL_MAX);
 
         startRx();
 
-        EventBits_t xWaitResult = xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS(lDelay));
-
+        EventBits_t xWaitResult = xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS((int)lDelay));
+        xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);
         if (xWaitResult & EVENTBIT_LORA_RX) {
             handleRx();
             DBG_PRINTLN("Channel in use... Waiting again");
@@ -185,8 +185,10 @@ int16_t startTx(Message *msg) {
         }
     } while (!bChannelFree);
 
-    radio.setDio1Action(onTxIrq);
+    
     xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_TX);
+    radio.clearIrq(RADIOLIB_IRQ_TX_DONE);
+    radio.setDio1Action(onTxIrq);
     return radio.startTransmit(bytes, length);
 }
 

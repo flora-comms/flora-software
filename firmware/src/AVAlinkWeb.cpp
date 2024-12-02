@@ -47,10 +47,15 @@ void webTask(void *) {
   bApIsUp = true;
   initWebServer(); // initialize the hardware
   while (true) {
-    xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_WEB_READY, pdTRUE, pdFALSE, portMAX_DELAY);
+    xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_WEB_READY, pdFALSE, pdFALSE, portMAX_DELAY);
+    if (uxQueueMessagesWaiting(qToWeb) == 0) 
+    {
+      xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_WEB_READY);
+    }
+    
     Message *rx_msg; // create pointer to message object
 
-    xQueueReceive(qToWeb, &rx_msg, 0); // read in mesage pointer from queue
+    xQueueReceive(qToWeb, &rx_msg, 100); // read in mesage pointer from queue
 
     String data = rx_msg->toSerialJson(); // create serialized json object
 
