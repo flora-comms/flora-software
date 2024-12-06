@@ -9,13 +9,13 @@ Last Update: Nov 6 2024
 AVAlink utilities. All necessary include files to run AVAlink.
 
 */
-#ifndef AVALINK_UITLS_H
-#define AVALINK_UTILS_H
+#ifndef FLORANET_UITLS_H
+#define FLORANET_UTILS_H
 
 #include <FloraNetConfig.h>
 #include <LogList.h>
 
-#endif // AVALINK_UTILS_H
+#endif // FLORANET_UTILS_H
 
 
 

@@ -3,7 +3,7 @@
 #ifndef AVALINK_CONFIG_H
 #define AVALINK_CONFIG_H
 
-#include <ConfigOptions.h>
+#include <FloraNetDebug.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPmDNS.h>
@@ -15,29 +15,24 @@
 
 // FREERTOS
 
-// event bits
-#define EVENTBIT_LORA_Q 0x1         // 00000001
-#define EVENTBIT_LORA_TX 0x2        // 00000010
-#define EVENTBIT_LORA_RX 0x4        // 00000100
-#define EVENTBIT_LORA_CAD 0x8       // 00001000
-#define EVENTBIT_WEB_READY  0x10    // 00010000
+// Event Group
+
+// phy <--> p2p
+#define EVENTBIT_LORA_Q 0x1             // 00000001
+#define EVENTBIT_LORA_TX_DONE 0x2       // 00000010
+#define EVENTBIT_LORA_RX 0x4            // 00000100
+#define EVENTBIT_LORA_CAD 0x8           // 00001000
+#define EVENTBIT_WEB_READY  0x10        // 00010000
+#define EVENTBIT_SERIAL 0x20            // 00100000
+#define EVENTBIT_LORA_TX_READY 0x40     // 01000000
+
+// web <--> phy
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
 #define STACK_SIZE 8192 // stack size for each task
 
-// DEBUGGING
 
-#ifdef DEBUG
-#define SERIAL_BAUD 115200
-#define DBG_PRINTLN(MSG)            Serial.println(MSG)
-#define DBG_PRINT(MSG)              Serial.print(MSG)
-#define DBG_PRINTF(format, args...)  Serial.printf(format, args)
-#else
-#define DBG_PRINTLN(MSG)
-#define DBG_PRINT(MSG)
-#define DBG_PRINTF(format, args...)
-#endif
 
 // HARDWARE
 

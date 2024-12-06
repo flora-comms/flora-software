@@ -1,17 +1,17 @@
 /*
-======   AVAlinkRadio.h  ======
+======   FloraNetRadio.h  ======
 
 Version: v1.0
 Last Update: Nov 6 2024
 
 ======   DESCRIPTION   =====
 
-AVAlink Layer 1 and 2 interfacing
+FLORANET Layer 1 and 2 interfacing
 
 */
 
-#ifndef AVALINK_RADIO_H
-#define AVALINK_RADIO_H
+#ifndef FLORANET_RADIO_H
+#define FLORANET_RADIO_H
 #pragma once
 
 #include <FloraNetUtils.h>
@@ -22,7 +22,7 @@ AVAlink Layer 1 and 2 interfacing
 
 extern LogList* pxHistoryLogs[256];
 
-/// @brief Turns on the AVAlink Radio
+/// @brief Turns on the FLORANET Radio
 void initLora();
 
 /// @brief Lora task function
