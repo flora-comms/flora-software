@@ -4,10 +4,10 @@
 #define AVALINK_H
 #pragma once
 
-#include <AVAlinkRadio.h>
-#include <AVAlinkWeb.h>
+#include <FloraNetRadio.h>
+#include <FloraNetWeb.h>
 
 /// @brief Initializes AVAlink hardware
-void initAvalink();
+void initFloraNet();
 
 #endif

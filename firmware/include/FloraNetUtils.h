@@ -12,7 +12,7 @@ AVAlink utilities. All necessary include files to run AVAlink.
 #ifndef AVALINK_UITLS_H
 #define AVALINK_UTILS_H
 
-#include <AVAlinkConfig.h>
+#include <FloraNetConfig.h>
 #include <LogList.h>
 
 #endif // AVALINK_UTILS_H

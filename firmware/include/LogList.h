@@ -14,7 +14,7 @@ Linked list instantiation for the log lists
 #define LOGLIST_H
 #pragma once
 
-#include <AVAlinkConfig.h>
+#include <FloraNetConfig.h>
 #include <Message.h>
 
 class LogList {

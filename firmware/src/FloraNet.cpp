@@ -1,4 +1,4 @@
-#include <AVAlink.h>
+#include <FloraNet.h>
 
 SPIClass sdSPI(FSPI);
 QueueHandle_t qToWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
@@ -7,7 +7,7 @@ EventGroupHandle_t xAvalinkEventGroup = xEventGroupCreate();
 bool bApIsUp = true;
 
 /// @brief Initializes AVAlink hardware
-void initAvalink()
+void initFloraNet()
 {
 #ifdef DEBUG
     Serial.begin(SERIAL_BAUD);

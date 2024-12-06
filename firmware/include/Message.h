@@ -1,4 +1,4 @@
-#include <AVAlinkConfig.h>
+#include <FloraNetConfig.h>
 
 
 /// @brief Message class. Intermediate between a web chat and a lora packet for inter-task communications
