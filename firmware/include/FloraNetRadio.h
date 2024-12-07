@@ -16,28 +16,45 @@ FLORANET Layer 1 and 2 interfacing
 
 #include <FloraNetUtils.h>
 
+/// @brief Handles the LoRa hardware.
+class FloraNetRadio {
+private:
+    SX1262* _pxRadio;
+    TaskHandle_t _xTaskHandle;
+    QueueHandle_t _qInbox;
+    QueueHandle_t _qOutbox;
+    EventGroupHandle_t _eventGroup;
 
+public:
+    /// @brief Radio starts recieving
+    void startRx();
+
+    /// @brief Begins transmitting a message
+    /// @param msg The message to transmit
+    /// @return The status of the transmission
+    int16_t startTx(Message *msg);
+
+    /// @brief The main task functionality to run.
+    void mainTask();
+
+    /// @brief Turns on the FLORANET Radio
+    void initLora();
+
+    /// @brief Handles a receive event
+    void handleRx();
+
+    FloraNetRadio(SX1262* radio, QueueHandle_t qInbox, QueueHandle_t qOutbox, EventGroupHandle_t eventGroup);
+
+    void begin();
+
+    void end();
+};
 
 // globals
 
 extern LogList* pxHistoryLogs[256];
 
-/// @brief Turns on the FLORANET Radio
-void initLora();
-
-/// @brief Lora task function
-void loraTask(void * pvParameters);
-
-/// @brief Radio starts recieving
-void startRx();
-
-/// @brief Handles a receive event
-void handleRx();
-
-/// @brief Begins transmitting a message
-/// @param msg The message to transmit
-/// @return The status of the transmission
-int16_t startTx(Message *msg);
+extern "C" static void loraTask( void * pvParameter);
 
 /// @brief Handles a TX complete event
 void handleTx();

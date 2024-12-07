@@ -1,12 +1,12 @@
 /*
-======   AVAlinkUtils.h  ======
+======   FloraNetUtils.h  ======
 
-Version: v1.0
-Last Update: Nov 6 2024
+Version: v2.0
+Last Update: Dec 6 2024
 
 ======   DESCRIPTION   =====
 
-AVAlink utilities. All necessary include files to run AVAlink.
+FloraNet utilities. All necessary include files to run FloraNet.
 
 */
 #ifndef FLORANET_UITLS_H
@@ -15,7 +15,8 @@ AVAlink utilities. All necessary include files to run AVAlink.
 #include <FloraNetConfig.h>
 #include <LogList.h>
 
+// Event group for global flags
+
+extern EventGroupHandle_t xEventGroup;
+
 #endif // FLORANET_UTILS_H
-
-
-

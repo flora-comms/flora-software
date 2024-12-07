@@ -2,22 +2,12 @@
 
 // globals
 
-SX1262 radio = new Module(
-    LORA_NSS,
-    LORA_IRQ,
-    LORA_NRST,
-    LORA_BUSY,
-    loraSPI);
-
-SPIClass loraSPI(HSPI);
-
 LogList* pxHistoryLogs[256];
 
 // function definitions
-void initLora() {
-    loraSPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
+void FloraNetRadio::initLora() {
     DBG_PRINT("[SX1262] Initializing ... ");
-    int status = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
+    int status = _radio->begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
     if (status == RADIOLIB_ERR_NONE)
     {
         DBG_PRINT("success!\n");
@@ -32,8 +22,8 @@ void initLora() {
     radio.explicitHeader();
     radio.setCRC(2);
 
-    xAvalinkEventGroup = xEventGroupCreate();
-    if (xAvalinkEventGroup == NULL)
+    xEventGroup = xEventGroupCreate();
+    if (xEventGroup == NULL)
     {
         DBG_PRINTLN("Lora Event group creation was unsuccessful");
     }
@@ -46,7 +36,7 @@ void initLora() {
 }
 
 /// @brief Lora task function
-void loraTask(void * pvParameters) 
+void (void * pvParameters) 
 {
     initLora(); // initialize the ahrdwawer
 
@@ -58,14 +48,14 @@ void loraTask(void * pvParameters)
 
     EventBits_t xLoraEventBits;
 
-    xEventGroupClearBits(xAvalinkEventGroup, 0xFF); // clear all bits
+    xEventGroupClearBits(xEventGroup, 0xFF); // clear all bits
 
     while (true)
     {
         // wait for notification from radio or web server
         DBG_PRINTLN("LoRa begin waiting...");
         xLoraEventBits = xEventGroupWaitBits(
-            xAvalinkEventGroup, 
+            xEventGroup, 
             (EventBits_t)(EVENTBIT_LORA_RX | EVENTBIT_LORA_TX | EVENTBIT_LORA_Q),
             pdFALSE,
             pdFALSE,
@@ -91,7 +81,7 @@ void loraTask(void * pvParameters)
             DBG_PRINTF("Message from web server: %s", pxTxMsg->payload);
             // if the queue is empty, 
             if(uxQueueMessagesWaiting(qToMesh) == 0) {
-                xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_Q); // clear the queue event bit
+                xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_Q); // clear the queue event bit
             }
 
             DBG_PRINTLN("Starting Tx...");
@@ -109,14 +99,14 @@ void loraTask(void * pvParameters)
 }
 
 void startRx() {
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);    // clear the event
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);    // clear the event
     radio.setDio1Action(onRxIrq);                               // set the irq
     radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE);        // start in single recieve mode
 }
 
 void handleRx() {
     radio.clearIrqFlags(RADIOLIB_IRQ_RX_DONE);   // clear the interrupt
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);
     int status;
     uint8_t rx_data[256] = {0};          // create buffer of zeros
     status = radio.readData(rx_data, 0); // read in data
@@ -137,14 +127,14 @@ void handleRx() {
             pxRxMsg->appendHistory(HISTORY_FILENAME);
         } else {
             xQueueSend(qToWeb, &pxRxMsg, 0); // send to the web server through web server queue
-            xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_WEB_READY);
+            xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_READY);
         }
 
         
         xQueueSend(qToMesh, &pxRxMsg, 0);   // send to lora mesh queue for sending when ready
 
         // raise lora Queue event
-        xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_LORA_Q);
+        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_Q);
     } else {
         DBG_PRINTLN("No rpt");
     }
@@ -176,8 +166,8 @@ int16_t startTx(Message *msg) {
 
         startRx();
 
-        EventBits_t xWaitResult = xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS((int)lDelay));
-        xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_RX);
+        EventBits_t xWaitResult = xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS((int)lDelay));
+        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);
         if (xWaitResult & EVENTBIT_LORA_RX) {
             handleRx();
             DBG_PRINTLN("Channel in use... Waiting again");
@@ -186,7 +176,7 @@ int16_t startTx(Message *msg) {
     } while (!bChannelFree);
 
     
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_TX);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX);
     radio.clearIrq(RADIOLIB_IRQ_TX_DONE);
     radio.setDio1Action(onTxIrq);
     return radio.startTransmit(bytes, length);
@@ -194,18 +184,18 @@ int16_t startTx(Message *msg) {
 
 void handleTx() {
     // clear the event
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_TX);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX);
     // start recieving again
     startRx();
 }
 
 void startCad() {
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_CAD);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_CAD);
     radio.startChannelScan();
 }
 
 int16_t handleCad() {
-    xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_LORA_CAD);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_CAD);
     return radio.getChannelScanResult();
 }
 
@@ -227,7 +217,7 @@ static void onRxIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xAvalinkEventGroup,
+        xEventGroup,
         EVENTBIT_LORA_RX,
         &xHigherPriorityTaskWoken
     );
@@ -249,7 +239,7 @@ static void onTxIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xAvalinkEventGroup,
+        xEventGroup,
         EVENTBIT_LORA_TX,
         &xHigherPriorityTaskWoken);
     /* Was the message posted successfully? */
@@ -270,7 +260,7 @@ static void onCadIrq() {
     xHigherPriorityTaskWoken = pdFALSE;
 
     xResult = xEventGroupSetBitsFromISR(
-        xAvalinkEventGroup,
+        xEventGroup,
         EVENTBIT_LORA_CAD,
         &xHigherPriorityTaskWoken);
     /* Was the message posted successfully? */

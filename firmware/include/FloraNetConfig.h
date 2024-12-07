@@ -1,7 +1,7 @@
-// Config preprocessor logic based on AVAlinkConfig.h
+// Config preprocessor logic based on FloraNetConfig.h
 
-#ifndef AVALINK_CONFIG_H
-#define AVALINK_CONFIG_H
+#ifndef FLORANET_CONFIG_H
+#define FLORANET_CONFIG_H
 
 #include <FloraNetDebug.h>
 #include <ArduinoJson.h>
@@ -18,21 +18,19 @@
 // Event Group
 
 // phy <--> p2p
-#define EVENTBIT_LORA_Q 0x1             // 00000001
-#define EVENTBIT_LORA_TX_DONE 0x2       // 00000010
-#define EVENTBIT_LORA_RX 0x4            // 00000100
-#define EVENTBIT_LORA_CAD 0x8           // 00001000
-#define EVENTBIT_WEB_READY  0x10        // 00010000
-#define EVENTBIT_SERIAL 0x20            // 00100000
-#define EVENTBIT_LORA_TX_READY 0x40     // 01000000
-
-// web <--> phy
+#define EVENTBIT_LORA_TX_READY 0x1          // 000000000001
+#define EVENTBIT_LORA_TX_DONE 0x2           // 000000000010
+#define EVENTBIT_LORA_RX_READY 0x4          // 000000000100
+#define EVENTBIT_LORA_RX_DONE 0x8           // 000000001000
+#define EVENTBIT_WEB_TX_READY  0x10         // 000000010000
+#define EVENTBIT_WEB_RX_DONE 0x20           // 000000100000
+#define EVENTBIT_LORA_SLEEP_READY 0x40      // 000001000000
+#define EVENTBIT_WEB_SLEEP_READY 0x80       // 000010000000
+#define EVENTBIT_PREP_SLEEP         0x100   // 000100000000
 
 // queues and stacks
-#define QUEUE_LENGTH 10 // freertos queue length
+#define QUEUE_LENGTH 5 // freertos queue length
 #define STACK_SIZE 8192 // stack size for each task
-
-
 
 // HARDWARE
 
@@ -159,8 +157,7 @@ extern QueueHandle_t        qToWeb;     // the queue from the lora task to the w
 extern bool                 bApIsUp;    // is the wifi ap up?
 extern SX1262               radio;
 extern SPIClass             sdSPI;
-extern SPIClass             loraSPI;
-extern EventGroupHandle_t   xAvalinkEventGroup;
+extern EventGroupHandle_t   xEventGroup;
 extern AsyncWebServer       server;
 extern AsyncWebSocket       ws;
 extern TaskHandle_t         xLoraTask;

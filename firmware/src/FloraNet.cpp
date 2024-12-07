@@ -3,8 +3,10 @@
 SPIClass sdSPI(FSPI);
 QueueHandle_t qToWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qToMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
-EventGroupHandle_t xAvalinkEventGroup = xEventGroupCreate();
+EventGroupHandle_t xEventGroup = xEventGroupCreate();
 bool bApIsUp = true;
+
+loraSPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
 
 /// @brief Initializes AVAlink hardware
 void initFloraNet()

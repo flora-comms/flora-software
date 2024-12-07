@@ -27,6 +27,7 @@ private:
         bool _ack;
         LogEntry *_next;
         LogEntry *_prev;
+        TimerHandle_t _timer;
 
         /// @brief Constructs a LogEntry from a Message object and a PacketId
         /// @param message The Message to construct the log entry from
