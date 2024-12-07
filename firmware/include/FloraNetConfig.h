@@ -19,7 +19,7 @@
 
 // phy <--> p2p
 #define EVENTBIT_LORA_Q 0x1             // 00000001
-#define EVENTBIT_LORA_TX_DONE 0x2       // 00000010
+#define EVENTBIT_LORA_TX 0x2       // 00000010
 #define EVENTBIT_LORA_RX 0x4            // 00000100
 #define EVENTBIT_LORA_CAD 0x8           // 00001000
 #define EVENTBIT_WEB_READY  0x10        // 00010000
