@@ -15,5 +15,6 @@ Power management of the esp32 MPU
 #pragma once
 
 #include <FloraNetUtils.h>
+#include <driver/rtc_io.h>
 
 #endif
