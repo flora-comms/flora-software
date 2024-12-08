@@ -1,4 +1,7 @@
 #include <FloraNetWatchDog.h>
+void IRAM_ATTR buttonISR() {
+  // DO stuff
+}
 
 void sleepRoutine() {
   // remove button IRQ and semtech IRQ
@@ -7,8 +10,8 @@ void sleepRoutine() {
   // set wake up sources
   pinMode(LORA_IRQ, INPUT);
   pinMode(USER_BTN, INPUT_PULLUP);
-  gpio_wakeup_enable(LORA_IRQ, GPIO_INTR_HIGH_LEVEL);
-  gpio_wakeup_enable(USER_BTN, GPIO_INTR_LOW_LEVEL);
+  gpio_wakeup_enable((gpio_num_t)LORA_IRQ, GPIO_INTR_HIGH_LEVEL);
+  gpio_wakeup_enable((gpio_num_t)USER_BTN, GPIO_INTR_LOW_LEVEL);
   esp_sleep_enable_gpio_wakeup();
 }
 void wakeRoutine() {
@@ -20,9 +23,12 @@ void wakeRoutine() {
 }
 
 void watchDogTask(void *) {
+
+  attachInterrupt(digitalPinToInterrupt(USER_BTN), buttonISR, FALLING);
   EventBits_t xSleepBits;
+
   while (true) {
-    // wait for sleep events on WEB_SLEEP, PROTO_SLEEP and LORA_SLEEP
+    // wait for sleep ready events on WEB_SLEEP, PROTO_SLEEP and LORA_SLEEP
     xSleepBits = xEventGroupWaitBits(xAvalinkEventGroup,
                                      EVENTBIT_WEB_SLEEP_READY |
                                          EVENTBIT_PROTO_SLEEP_READY |

@@ -61,14 +61,14 @@
 #define SD_MISO 13 // SD miso
 
 #define LORA_NSS 34
-#define LORA_IRQ GPIO_NUM_38
+#define LORA_IRQ 38
 #define LORA_NRST 48
 #define LORA_BUSY 33
 #define LORA_MOSI 35
 #define LORA_MISO 37
 #define LORA_SCK 36
 
-#define USER_BTN GPIO_NUM_14
+#define USER_BTN 14
 
 #endif
 
