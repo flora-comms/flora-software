@@ -32,6 +32,7 @@
 #define EVENTBIT_PROTO_SLEEP_READY  0x100   // 000100000000
 #define EVENTBIT_PREP_SLEEP         0x200   // 001000000000
 #define EVENTBIT_WEB_REQUESTED      0x400   // 010000000000
+#define EVENTBIT_SOCKET_ACTION      0x800   // 100000000000
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
@@ -73,6 +74,8 @@
 #define LORA_MOSI 35
 #define LORA_MISO 37
 #define LORA_SCK 36
+
+#define USER_BUTTON 14
 
 #endif
 

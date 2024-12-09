@@ -25,6 +25,9 @@ extern portMUX_TYPE csToken;            // spinlock for critical sections
 extern QueueHandle_t qRetries;          // the retry queue
 extern LogList *pxHistoryLogs[256];     // array of LogList pointers containing message history from each sender id.
 
+// for web socket event handler
+extern QueueHandle_t qFromWeb;
+extern uint8_t currentId;       // the current packet id
 
 // ISRs
 /// @brief LoRa RX interrupt handler
@@ -34,5 +37,5 @@ static void RxISR(void);
 static void TxISR(void);
 
 /// @brief User button press ISR
-static void ButtonISR(void);
+static void buttonISR(void);
 #endif // FLORANET_UTILS_H

@@ -4,6 +4,8 @@
 
 LogList* pxHistoryLogs[256];
 QueueHandle_t qRetries = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
+QueueHandle_t qFromWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
+uint8_t currentId = 0;
 EventGroupHandle_t xEventGroup = xEventGroupCreate();
 
 static portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
@@ -56,8 +58,10 @@ static void TxISR(void){
 }
 
 /// @brief User button press ISR
-static void ButtonISR(void)
+static void buttonISR(void)
 {
+    detachInterrupt(USER_BUTTON);   // remove the interrupt
+
     BaseType_t xHigherPriorityTaskWoken, xResult;
 
     /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
