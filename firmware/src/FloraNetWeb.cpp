@@ -109,11 +109,11 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
 
     DBG_PRINT("WS Data received: ");
 
-
-
+    #ifdef DEBUG
     for (int i = 0; i < len; i++) {
       DBG_PRINT((char)data[i]);
     }
+    #endif
 
     DBG_PRINTLN();
 
