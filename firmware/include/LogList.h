@@ -14,7 +14,6 @@ Linked list instantiation for the log lists
 #define LOGLIST_H
 #pragma once
 
-#include <FloraNetConfig.h>
 #include <Message.h>
 
 class LogList {
@@ -29,7 +28,7 @@ private:
         LogEntry *_prev;
         TimerHandle_t _timer;
 
-        /// @brief Constructs a LogEntry from a Message object and a PacketId
+        /// @brief Constructs a LogEntry from a Message object
         /// @param message The Message to construct the log entry from
         LogEntry(Message *message)
         {
@@ -39,6 +38,8 @@ private:
             _next = nullptr;
             _prev = nullptr;
         }
+        /// @brief Destructor
+        ~LogEntry();
     };
     LogEntry *_root;    // the first entry in the log list
     LogEntry *_tail;
@@ -48,7 +49,11 @@ private:
     void removeLast();
     /// @brief Checks if a message needs to be retried. If yes, it puts the message at the top of the tx queue.
     void checkForRetries();
-    
+    /// @brief finds a packetId in the list and marks it as acknowledged if found
+    /// @param packetId The packetId to find
+    /// @return True if the packetId is in the list. False if the packet id does not exist
+    bool checkId(uint8_t packetId);
+
 public:
 
     LogList() { _root = nullptr; _tail = nullptr; _len = 0; }
@@ -59,10 +64,10 @@ public:
     /// @param message The message to push to the top
     void update(Message *message);
 
-    /// @brief finds a packetId in the list and marks it as acknowledged if found
-    /// @param packetId The packetId to find
-    /// @return True if the packetId is in the list. False if the packet id does not exist
-    bool checkId(uint8_t packetId);
+    /// @brief Determines if a message needs to be repeated
+    /// @param message The message to check.
+    /// @return True if the message needs to be repeated. False if not
+    bool needsRepeating(Message *message);
 };
 
 #endif  // LOGLIST_H

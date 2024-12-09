@@ -13,11 +13,14 @@
 #include <SPI.h>
 #include <RadioLib.h>
 
+// Web server
+#define WEBSERVER_DNS "floranet"   // puts domain at "http://{WEBSERVER_DNS}.local"
+#define WEBSOCKET_ENDPOINT "/chat" // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
+
 // FREERTOS
 
 // Event Group
 
-// phy <--> p2p
 #define EVENTBIT_LORA_TX_READY 0x1          // 000000000001
 #define EVENTBIT_LORA_TX_DONE 0x2           // 000000000010
 #define EVENTBIT_LORA_RX_READY 0x4          // 000000000100
@@ -26,11 +29,14 @@
 #define EVENTBIT_WEB_RX_DONE 0x20           // 000000100000
 #define EVENTBIT_LORA_SLEEP_READY 0x40      // 000001000000
 #define EVENTBIT_WEB_SLEEP_READY 0x80       // 000010000000
-#define EVENTBIT_PREP_SLEEP         0x100   // 000100000000
+#define EVENTBIT_PROTO_SLEEP_READY  0x100   // 000100000000
+#define EVENTBIT_PREP_SLEEP         0x200   // 001000000000
+#define EVENTBIT_WEB_REQUESTED      0x400   // 010000000000
 
 // queues and stacks
-#define QUEUE_LENGTH 5 // freertos queue length
+#define QUEUE_LENGTH 10 // freertos queue length
 #define STACK_SIZE 8192 // stack size for each task
+#define MAX_TICKS_TO_WAIT   10     // maximum ticks to wait when writing to queues
 
 // HARDWARE
 
@@ -82,7 +88,7 @@
 #define LORA_SYNC 0x34  // sync word
 #define LORA_POWER 17   // tx power in dBm
 #define LORA_PREAMB 16  // # of symbols in preamble
-
+#define MAX_LORA_TTL 4  // maximum TTL hop count
 
 // lora modes
 
@@ -152,14 +158,5 @@
 
 // GLOBAL VARIABLES
 
-extern QueueHandle_t        qToMesh;    // the queue from the web task to the lora task
-extern QueueHandle_t        qToWeb;     // the queue from the lora task to the web task
-extern bool                 bApIsUp;    // is the wifi ap up?
-extern SX1262               radio;
-extern SPIClass             sdSPI;
-extern EventGroupHandle_t   xEventGroup;
-extern AsyncWebServer       server;
-extern AsyncWebSocket       ws;
-extern TaskHandle_t         xLoraTask;
-extern TaskHandle_t         xWebTask;
+
 #endif

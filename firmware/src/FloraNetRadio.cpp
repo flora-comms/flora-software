@@ -1,13 +1,48 @@
 #include <FloraNetRadio.h>
 
-// globals
+// private
 
-LogList* pxHistoryLogs[256];
+void FloraNetRadio::startRx() {
+    // clear the rx-ready event bit
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+    // attach the rx isr to DIO1 and start recieving
+    CRITICAL_SECTION(
+        _radio->setDio1Action(RxISR);
+        _radio->startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE)   // single rx mode
+        )
+}
 
-// function definitions
+void FloraNetRadio::handleTx() {
+
+    // recieve the message
+    Message * msg;
+    xQueueReceive(_inbox, &msg, MAX_TICKS_TO_WAIT);
+    uint8_t buf[256];
+    uint16_t len = msg->toLoraPacket(buf);
+
+    // start transmitting
+    CRITICAL_SECTION(
+        int status = _radio->startTransmit(buf, len)
+    )
+
+    // check for issues
+    if (status != RADIOLIB_ERR_NONE) {
+        DBG_PRINTF("Lora TX failed. Code %i", status);
+        return;
+    }
+
+    // wait for the transmission to finish
+    xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_TX_DONE, true, true, MAX_TICKS_TO_WAIT);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_DONE);
+}
+
 void FloraNetRadio::initLora() {
-    DBG_PRINT("[SX1262] Initializing ... ");
-    int status = _radio->begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB);
+
+    CRITICAL_SECTION
+    (
+        int status = _radio->begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB)
+    )
+
     if (status == RADIOLIB_ERR_NONE)
     {
         DBG_PRINT("success!\n");
@@ -17,259 +52,94 @@ void FloraNetRadio::initLora() {
         DBG_PRINTF("Failed: code %i\n", status);
         return;
     }
-    radio.setCurrentLimit(60.0);
-    radio.setDio2AsRfSwitch(true);
-    radio.explicitHeader();
-    radio.setCRC(2);
 
-    xEventGroup = xEventGroupCreate();
-    if (xEventGroup == NULL)
-    {
-        DBG_PRINTLN("Lora Event group creation was unsuccessful");
-    }
-
-    // init linked lists on heap
-    for (int i = 0; i < 256; i++)
-    {
-        pxHistoryLogs[i] = new LogList();
-    }
+    CRITICAL_SECTION(
+        _radio->setCurrentLimit(60.0);
+        _radio->setDio2AsRfSwitch(true);
+        _radio->explicitHeader();
+        _radio->setCRC(2);
+        randomSeed(_radio->getRSSI()))
+    
 }
 
-/// @brief Lora task function
-void (void * pvParameters) 
-{
-    initLora(); // initialize the ahrdwawer
+void FloraNetRadio::handleRx() {
 
+    uint8_t rx_data[256] = {0};              // create buffer of zeros
 
-    // random number generator
-    randomSeed(radio.getRSSI());
+    // read the received data into the buffer
+    CRITICAL_SECTION 
+    (
+        int status = _radio->readData(rx_data, 0)
+    )
 
-    startRx();      // TODO define this w irq and startReceive()
+    // start receiving again
+    startRx();
 
-    EventBits_t xLoraEventBits;
-
-    xEventGroupClearBits(xEventGroup, 0xFF); // clear all bits
-
-    while (true)
-    {
-        // wait for notification from radio or web server
-        DBG_PRINTLN("LoRa begin waiting...");
-        xLoraEventBits = xEventGroupWaitBits(
-            xEventGroup, 
-            (EventBits_t)(EVENTBIT_LORA_RX | EVENTBIT_LORA_TX | EVENTBIT_LORA_Q),
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY);   // Wait for notification from webserver or radio
-        DBG_PRINTF("LoRa Wakeup! Event bits: %i", xLoraEventBits);
-        if (xLoraEventBits & EVENTBIT_LORA_TX)             // if a tx has finished
-        {
-            handleTx();                                    // handle the tx finished, start rxing again
-        }
-
-        if (xLoraEventBits & EVENTBIT_LORA_RX)        // if an rx has finished
-        {
-            handleRx();                               // handle the recieved message
-        }
-        
-        if (xLoraEventBits & EVENTBIT_LORA_Q)    // if there's a message in the queue
-        {
-
-            Message *pxTxMsg;
-
-            xQueueReceive(qToMesh, &pxTxMsg, 0);
-
-            DBG_PRINTF("Message from web server: %s", pxTxMsg->payload);
-            // if the queue is empty, 
-            if(uxQueueMessagesWaiting(qToMesh) == 0) {
-                xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_Q); // clear the queue event bit
-            }
-
-            DBG_PRINTLN("Starting Tx...");
-            uint16_t status = startTx(pxTxMsg);
-
-            if (status != RADIOLIB_ERR_NONE) {
-                DBG_PRINTF("Tx Failure - Code: %i", status);
-                startRx();
-            } else {
-                DBG_PRINT("\tsuccess\n");
-            }
-        }
-
-    }
-}
-
-void startRx() {
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);    // clear the event
-    radio.setDio1Action(onRxIrq);                               // set the irq
-    radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE);        // start in single recieve mode
-}
-
-void handleRx() {
-    radio.clearIrqFlags(RADIOLIB_IRQ_RX_DONE);   // clear the interrupt
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);
-    int status;
-    uint8_t rx_data[256] = {0};          // create buffer of zeros
-    status = radio.readData(rx_data, 0); // read in data
     if (!(status == RADIOLIB_ERR_NONE))
     {
         DBG_PRINTLN("Lora RX failure");
     }
 
     Message *pxRxMsg = new Message(rx_data);
-    DBG_PRINTF("LoRa Message recieved: %s", pxRxMsg->payload);
-    DBG_PRINTF("SenderId: %i, PacketId: %i", pxRxMsg->senderId, pxRxMsg->packetId);
 
-    if (needsRepeating(pxRxMsg)) // if this message needs repeating
-    { 
-        DBG_PRINTLN("Message needs repeating");
-        // write to sd card if necessary
-        if (!bApIsUp) {
-            pxRxMsg->appendHistory(HISTORY_FILENAME);
-        } else {
-            xQueueSend(qToWeb, &pxRxMsg, 0); // send to the web server through web server queue
-            xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_READY);
-        }
+    xQueueSend(_outbox, &pxRxMsg, MAX_TICKS_TO_WAIT);
 
-        
-        xQueueSend(qToMesh, &pxRxMsg, 0);   // send to lora mesh queue for sending when ready
+    xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE); // notify protocol task
 
-        // raise lora Queue event
-        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_Q);
-    } else {
-        DBG_PRINTLN("No rpt");
-    }
     return;
-}
+}    
 
-int16_t startTx(Message *msg) {
-    // if this is the first time sending the message, we want to be able to retry if it doesn't get ack, so retry will be true. 
-    // That means we need to deceremnt ttl and save it in the history logs to check for acks
-    if (!msg->isRetry)
+void FloraNetRadio::prepForSleep() {
+    while (uxQueueMessagesWaiting(_inbox) != 0) 
     {
-        msg->ttl--;     // decrement ttl
-        pxHistoryLogs[msg->senderId]->update(msg); // put it in the log
+        handleTx();
     }
 
-    // DBG_PRINTF("Web Server Message recieved: %s", pxRxMsg.payload);
+    // clear flags and start receiving with no dio1 action
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+    CRITICAL_SECTION(_radio->clearDio1Action(); _radio->startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE))
+    // set lora sleep
+    xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
+}
 
-    uint8_t bytes[256] = {0}; // TODO make sure web app doesn't let people send messages longer than 251 chars.
+// public
 
-    uint16_t length = msg->toLoraPacket(bytes);
-
-    // calculate max time on air per pxRxMsg in ms
-    RadioLibTime_t xMaxTimeOnAir = radio.getTimeOnAir(250) / 1000;
-    bool bChannelFree;
-
-    do {
-        bChannelFree = true;
-        long lDelay = xMaxTimeOnAir * random(1, LORA_TX_WAIT_INTERVAL_MAX);
-
-        startRx();
-
-        EventBits_t xWaitResult = xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_RX, pdTRUE, pdTRUE, pdMS_TO_TICKS((int)lDelay));
-        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX);
-        if (xWaitResult & EVENTBIT_LORA_RX) {
+void FloraNetRadio::run() {
+    initLora();
+    while (true) {
+        // wait for an event
+        EventBits_t eventBits = xEventGroupWaitBits(xEventGroup,
+                                    (EVENTBIT_LORA_RX_READY | EVENTBIT_LORA_TX_READY | EVENTBIT_PREP_SLEEP),
+                                    false,
+                                    false,
+                                    portMAX_DELAY);
+        
+        // handle events
+        if ((eventBits & EVENTBIT_LORA_RX_READY) != 0){
             handleRx();
-            DBG_PRINTLN("Channel in use... Waiting again");
-            bChannelFree = false;
         }
-    } while (!bChannelFree);
 
-    
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX);
-    radio.clearIrq(RADIOLIB_IRQ_TX_DONE);
-    radio.setDio1Action(onTxIrq);
-    return radio.startTransmit(bytes, length);
-}
+        if ((eventBits & EVENTBIT_LORA_TX_READY) != 0) {
+            // handle the transmission
+            handleTx();
 
-void handleTx() {
-    // clear the event
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX);
-    // start recieving again
-    startRx();
-}
-
-void startCad() {
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_CAD);
-    radio.startChannelScan();
-}
-
-int16_t handleCad() {
-    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_CAD);
-    return radio.getChannelScanResult();
-}
-
-bool needsRepeating(Message *msg) {
-    LogList* pxLog = pxHistoryLogs[msg->senderId];
-    if (msg->ttl == 0) {                    // if the ttl is zero dont repeat
-        return false;
-    }
-    if (pxLog->checkId(msg->packetId)) {    // if the packet id from that sender has been seen before dont repeat
-        return false;
-    }
-    return true;            // otherwise return true
-}
-
-static void onRxIrq() {
-    BaseType_t xHigherPriorityTaskWoken, xResult;
-
-    /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
-    xHigherPriorityTaskWoken = pdFALSE;
-
-    xResult = xEventGroupSetBitsFromISR(
-        xEventGroup,
-        EVENTBIT_LORA_RX,
-        &xHigherPriorityTaskWoken
-    );
-    /* Was the message posted successfully? */
-    if (xResult != pdFAIL)
-    {
-        /* If xHigherPriorityTaskWoken is now set to pdTRUE then a context
-           switch should be requested. The macro used is port specific and will
-           be either portYIELD_FROM_ISR() or portEND_SWITCHING_ISR() - refer to
-           the documentation page for the port being used. */
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            // if there are no more messages in the queue, clear tx ready event flag and start receiving
+            if (uxQueueMessagesWaiting(_inbox) == 0)
+            {
+                xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_READY);
+                startRx();
+            }
+        }
+        if ((eventBits & EVENTBIT_PREP_SLEEP) != 0) {
+            prepForSleep();
+        }
     }
 }
 
-static void onTxIrq() {
-    BaseType_t xHigherPriorityTaskWoken, xResult;
-
-    /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
-    xHigherPriorityTaskWoken = pdFALSE;
-
-    xResult = xEventGroupSetBitsFromISR(
-        xEventGroup,
-        EVENTBIT_LORA_TX,
-        &xHigherPriorityTaskWoken);
-    /* Was the message posted successfully? */
-    if (xResult != pdFAIL)
-    {
-        /* If xHigherPriorityTaskWoken is now set to pdTRUE then a context
-           switch should be requested. The macro used is port specific and will
-           be either portYIELD_FROM_ISR() or portEND_SWITCHING_ISR() - refer to
-           the documentation page for the port being used. */
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-}
-
-static void onCadIrq() {
-    BaseType_t xHigherPriorityTaskWoken, xResult;
-
-    /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
-    xHigherPriorityTaskWoken = pdFALSE;
-
-    xResult = xEventGroupSetBitsFromISR(
-        xEventGroup,
-        EVENTBIT_LORA_CAD,
-        &xHigherPriorityTaskWoken);
-    /* Was the message posted successfully? */
-    if (xResult != pdFAIL)
-    {
-        /* If xHigherPriorityTaskWoken is now set to pdTRUE then a context
-           switch should be requested. The macro used is port specific and will
-           be either portYIELD_FROM_ISR() or portEND_SWITCHING_ISR() - refer to
-           the documentation page for the port being used. */
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
+void loraTask(void * pvParameter) {
+    FloraNetRadio * handler = static_cast<FloraNetRadio*> ( pvParameter );
+    handler->run(); // run the handler. should never return
+    delete handler; // if it does, delete it and the task?
+    vTaskDelete(NULL);
+    return;
 }

@@ -7,20 +7,20 @@
 #include <FloraNetRadio.h>
 #include <FloraNetWeb.h>
 
-class FloraNet {
-    QueueHandle_t        qToMesh();    
-    QueueHandle_t        qToWeb;     
-    bool                 bApIsUp;    
-    SX1262               radio;
-    SPIClass             sdSPI;
-    EventGroupHandle_t   xEventGroup;
-    AsyncWebServer       server;
-    AsyncWebSocket       ws;
-    TaskHandle_t         xLoraTask;
-    TaskHandle_t         xWebTask;
-};
+class FloraNet
+{
+private:
+    FloraNetRadio   _loraHandler;   // handles the lora hardware
+    FloraNetWeb     _webHandler;    // handles the web server
+    FloraNetProto   _protoHandler;  // handles the network protocol
+    FloraNetPower   _powerHandler;  // handles power management
 
-/// @brief Initializes FLORANET hardware
-void initFloraNet();
+public:
+    /// @brief Default constructor
+    FloraNet();
+
+    /// @brief Runs the FloraNet instance.
+    void run();
+};
 
 #endif
