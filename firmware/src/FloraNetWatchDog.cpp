@@ -6,15 +6,16 @@ void IRAM_ATTR buttonISR() {
 void sleepRoutine() {
   // Remove Interupt from button
   detachInterrupt(USER_BTN);
-  // set wake up sources
+  // setup LORA_IRQ
   pinMode(LORA_IRQ, INPUT);
-  pinMode(USER_BTN, INPUT_PULLUP);
-  gpio_wakeup_enable((gpio_num_t)LORA_IRQ, GPIO_INTR_HIGH_LEVEL);
-  // gpio_wakeup_enable((gpio_num_t)USER_BTN, GPIO_INTR_LOW_LEVEL);
-  esp_sleep_enable_ext0_wakeup(USER_BTN, 0);
-  rtc_gpio_pullup_en(USER_BTN);
-  rtc_gpio_pulldown_dis(USER_BTN);
+  gpio_wakeup_enable((gpio_num_t)LORA_IRQ,
+                     GPIO_INTR_HIGH_LEVEL); // wake from semtech using GPIO
   esp_sleep_enable_gpio_wakeup();
+  // setup USER_BTN
+  rtc_gpio_pullup_en((gpio_num_t)USER_BTN);
+  rtc_gpio_pulldown_dis((gpio_num_t)USER_BTN);
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BTN,
+                               0); // wake from button using EXT0
 }
 void wakeRoutine() {
   // Check wake source
