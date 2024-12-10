@@ -19,8 +19,6 @@ FLORANET Layer 1 and 2 interfacing
 /// @brief Handles the LoRa hardware.
 class FloraNetRadio {
 private:
-    QueueHandle_t _inbox;
-    QueueHandle_t _outbox;
 
     
 
@@ -44,11 +42,8 @@ public:
     /// @param radio the lora radio hardware to use
     /// @param inbox The queue to transmit messages from
     /// @param outbox the queue to send received messages to
-    FloraNetRadio(QueueHandle_t inbox, QueueHandle_t outbox)
-    {
-        _inbox = inbox;
-        _outbox = outbox;
-    }
+    FloraNetRadio()
+    {    }
 
     /// @brief Runs the radio handler instance.
     void run();

@@ -3,15 +3,21 @@
 // GLOBALS 
 
 LogList* pxHistoryLogs[256];
+// create queues
+QueueHandle_t qToMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
+QueueHandle_t qFromMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
+QueueHandle_t qToWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qRetries = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qFromWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 uint8_t currentId = 0;
 EventGroupHandle_t xEventGroup = xEventGroupCreate();
-
 portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
+AsyncWebServer server(80);
+AsyncWebSocket ws(WEBSOCKET_ENDPOINT);
 
 long maxTimeOnAir = 0;
 
+SPIClass sdSPI(FSPI);
 SPIClass loraSPI(HSPI);
 
 SX1262 radio = new Module(

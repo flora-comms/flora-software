@@ -15,17 +15,27 @@ FloraNet utilities. All necessary include files to run FloraNet.
 #include <LogList.h>
 
 // critical section macro
-#define CRITICAL_SECTION(args...) taskENTER_CRITICAL(&csToken); args; taskEXIT_CRITICAL(&csToken);
+#if defined(USE_CS)
+#define CRITICAL_SECTION(args...) taskDISABLE_INTERRUPTS(); args; taskENABLE_INTERRUPTS();
+#else
+#define CRITICAL_SECTION(args...) args;
+#endif
 
+#define SPI sdSPI
 // Globals
 extern EventGroupHandle_t xEventGroup;
-extern portMUX_TYPE csToken;            // spinlock for critical sections
 extern SX1262 radio;
+extern SPIClass sdSPI;
 extern SPIClass loraSPI;
-
+extern AsyncWebServer server;
+extern AsyncWebSocket ws;
+extern portMUX_TYPE csToken;
 // for timer task
 extern QueueHandle_t qRetries;          // the retry queue
-extern LogList *pxHistoryLogs[256];     // array of LogList pointers containing message history from each sender id.
+extern LogList* pxHistoryLogs[256];     // array of LogList pointers containing message history from each sender id.
+extern QueueHandle_t qToMesh ;
+extern QueueHandle_t qFromMesh ;
+extern QueueHandle_t qToWeb ;
 
 // for web socket event handler
 extern QueueHandle_t qFromWeb;

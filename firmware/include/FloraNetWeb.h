@@ -18,9 +18,6 @@ AVAlink web server interface
 // handles the web server
 class FloraNetWeb {
 private:
-    AsyncWebServer * _server;
-    AsyncWebSocket * _ws;
-    QueueHandle_t _inbox;       // the queue where messages from the protocol task are received
 
     /// @brief Initializes web server stuff
     void initWebServer();
@@ -29,11 +26,7 @@ private:
     void runServer();
 
 public:
-    FloraNetWeb(QueueHandle_t inbox) {
-        _server = new AsyncWebServer(80);
-        _ws = new AsyncWebSocket(WEBSOCKET_ENDPOINT);
-        _inbox = inbox;
-    }
+    FloraNetWeb() {};
     /// @brief Runs the web service handler.
     void run();
 };
@@ -50,7 +43,5 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
 
 /// @brief Web task function
 extern "C" void webTask(void * pvParameter);
-
-
 
 #endif

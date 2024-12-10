@@ -64,7 +64,7 @@ void FloraNetPower::handleSleep()
     #endif
     // determine wakeup cause
     esp_sleep_wakeup_cause_t wakeCause = esp_sleep_get_wakeup_cause();
-
+    
     // if caused by button
     if (wakeCause = ESP_SLEEP_WAKEUP_EXT0) // Button wakeup
     {
@@ -115,4 +115,13 @@ void FloraNetPower::run()
             portMAX_DELAY);
         handleSleep();
     }
+}
+
+void powerTask( void * pvParameter )
+{
+    FloraNetPower *handler = static_cast<FloraNetPower *>(pvParameter);
+    handler->run(); // run the handler. should never return
+    delete handler; // if it does, delete it and the task?
+    vTaskDelete(NULL);
+    return;
 }

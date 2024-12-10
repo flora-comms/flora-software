@@ -36,9 +36,9 @@ void setup() {
     digitalWrite(18, LOW);
     delay(500);
   }
-  DBG_PRINTLN("STARTING...");
-  loraSPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
-  FloraNet();
+  FloraNet *floranet = new FloraNet();
+  xEventGroupClearBits(xEventGroup, (EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_WEB_SLEEP_READY));
+  floranet->run();
 }
 void loop() {
   

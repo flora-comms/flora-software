@@ -15,7 +15,8 @@ void FloraNetRadio::handleTx() {
 
     // recieve the message
     Message * msg;
-    xQueueReceive(_inbox, &msg, MAX_TICKS_TO_WAIT);
+    xQueueReceive(qToMesh, &msg, MAX_TICKS_TO_WAIT);
+    DBG_PRINTF("RhT:%i-%i", msg->senderId, msg->packetId);
     uint8_t buf[256];
     uint16_t len = msg->toLoraPacket(buf);
 
@@ -26,9 +27,11 @@ void FloraNetRadio::handleTx() {
 
     // check for issues
     if (status != RADIOLIB_ERR_NONE) {
-        DBG_PRINTF("Lora TX failed. Code %i", status);
+        DBG_PRINTF("LTX failed. Code %i", status);
         return;
-    }
+    } 
+
+    DBG_PRINTLN("LTX suc");
 
     // wait for the transmission to finish
     xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_TX_DONE, true, true, MAX_TICKS_TO_WAIT);
@@ -36,7 +39,8 @@ void FloraNetRadio::handleTx() {
 }
 
 void FloraNetRadio::initLora() {
-
+    Serial.println("Initializing SX1262...");
+    loraSPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_NSS);
     CRITICAL_SECTION
     (
         int status = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB)
@@ -51,13 +55,11 @@ void FloraNetRadio::initLora() {
         DBG_PRINTF("Failed: code %i\n", status);
         return;
     }
-
-    CRITICAL_SECTION(
-        radio.setCurrentLimit(60.0);
-        radio.setDio2AsRfSwitch(true);
-        radio.explicitHeader();
-        radio.setCRC(2);
-        randomSeed(radio.getRSSI()))
+    radio.setCurrentLimit(60.0);
+    radio.setDio2AsRfSwitch(true);
+    radio.explicitHeader();
+    radio.setCRC(2);
+    randomSeed(radio.getRSSI());
     
 }
 
@@ -71,6 +73,8 @@ void FloraNetRadio::handleRx() {
         int status = radio.readData(rx_data, 0)
     )
 
+    
+
     // start receiving again
     startRx();
 
@@ -81,7 +85,9 @@ void FloraNetRadio::handleRx() {
 
     Message *pxRxMsg = new Message(rx_data);
 
-    xQueueSend(_outbox, &pxRxMsg, MAX_TICKS_TO_WAIT);
+    DBG_PRINTF("RhR:%i-%i",pxRxMsg->senderId, pxRxMsg->packetId);
+
+    xQueueSend(qFromMesh, &pxRxMsg, MAX_TICKS_TO_WAIT);
 
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE); // notify protocol task
 
@@ -89,14 +95,15 @@ void FloraNetRadio::handleRx() {
 }    
 
 void FloraNetRadio::prepForSleep() {
-    while (uxQueueMessagesWaiting(_inbox) != 0) 
+    while (uxQueueMessagesWaiting(qToMesh) != 0) 
     {
         handleTx();
     }
 
     // clear flags and start receiving with no dio1 action
     xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
-    CRITICAL_SECTION(radio.clearDio1Action(); radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE))
+    radio.clearDio1Action();
+    CRITICAL_SECTION(radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE))
     // set lora sleep
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
 }
@@ -105,6 +112,8 @@ void FloraNetRadio::prepForSleep() {
 
 void FloraNetRadio::run() {
     initLora();
+    maxTimeOnAir = radio.getTimeOnAir(255) / 1000;
+    xEventGroupClearBits(xEventGroup, (EVENTBIT_LORA_RX_READY | EVENTBIT_LORA_TX_READY));
     while (true) {
         // wait for an event
         EventBits_t eventBits = xEventGroupWaitBits(xEventGroup,
@@ -115,6 +124,7 @@ void FloraNetRadio::run() {
         
         // handle events
         if ((eventBits & EVENTBIT_LORA_RX_READY) != 0){
+            xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
             handleRx();
         }
 
@@ -123,13 +133,14 @@ void FloraNetRadio::run() {
             handleTx();
 
             // if there are no more messages in the queue, clear tx ready event flag and start receiving
-            if (uxQueueMessagesWaiting(_inbox) == 0)
+            if (uxQueueMessagesWaiting(qToMesh) == 0)
             {
                 xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_READY);
                 startRx();
             }
         }
         if ((eventBits & EVENTBIT_PREP_SLEEP) != 0) {
+            xEventGroupClearBits(xEventGroup, EVENTBIT_PREP_SLEEP);
             prepForSleep();
         }
     }

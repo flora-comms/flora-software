@@ -1,38 +1,10 @@
 #include <FloraNetProto.h>
 
 //private
-void FloraNetProto::appendHistory(Message * msg)
-{
-    uint8_t type;
-    if (msg->dest == 0x00)
-    {
-        type = 1;
-    }
-    else
-    {
-        type = 0;
-    }
-    String combinedString = "\"" + msg->payload + "\"" + "," + String(msg->senderId) + "," +
-                            String(type); // "payload",nodeID,SOS
-
-    File file = SD.open(HISTORY_FILENAME, FILE_APPEND);
-
-    if (!file)
-    {
-        DBG_PRINTLN("Failed to open file for writing!");
-        return;
-    }
-    else
-    {
-        file.println(combinedString);
-        file.close();
-    }
-}
-
 void FloraNetProto::init()
 {
     // initialize the history logs
-    for( int i; i < 256; i++) {
+    for( int i = 0; i < 256; i++) {
         pxHistoryLogs[i] = new LogList();
     }
 }
@@ -40,6 +12,7 @@ void FloraNetProto::init()
 void FloraNetProto::handleEvents()
 {
     do {
+        taskYIELD();    // for wdt
         EventBits_t eventbits = xEventGroupGetBits(xEventGroup);
         if ((eventbits & EVENTBIT_LORA_RX_DONE) != 0) {
             handleLora();
@@ -50,7 +23,8 @@ void FloraNetProto::handleEvents()
         if ((eventbits & EVENTBIT_RETRY_READY) != 0) {
             Message *msg;
             xQueueReceive(qRetries, &msg, MAX_TICKS_TO_WAIT);
-            xQueueSend(_qToMesh, &msg, MAX_TICKS_TO_WAIT);
+            DBG_PRINTF("RTY:%i-%i", msg->senderId, msg->packetId);
+            xQueueSend(qToMesh, &msg, MAX_TICKS_TO_WAIT);
             xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_TX_READY);
         }
     } while (!readyToSleep());
@@ -65,8 +39,6 @@ void FloraNetProto::handleTx(Message * msg, LogList * log)
     // wait for the delay
     vTaskDelay(pdMS_TO_TICKS(delay));
 
-    // write to sd card
-    appendHistory(msg);
 
     // create and start retry timer
     RetryTimerID *id = new RetryTimerID(log->root);
@@ -79,7 +51,7 @@ void FloraNetProto::handleTx(Message * msg, LogList * log)
     );
 
     // send to mesh
-    xQueueSend(_qToMesh, &msg, MAX_TICKS_TO_WAIT);
+    xQueueSend(qToMesh, &msg, MAX_TICKS_TO_WAIT);
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_TX_READY);
     xTimerStart(timer, MAX_TICKS_TO_WAIT);
 }
@@ -88,16 +60,23 @@ void FloraNetProto::handleLora()
 {
     // get the message from the queue
     Message *msg;
-    xQueueReceive(_qFromMesh, &msg, MAX_TICKS_TO_WAIT);
+    xQueueReceive(qFromMesh, &msg, MAX_TICKS_TO_WAIT);
+    DBG_PRINTF("PhL:%i-%i", msg->senderId, msg->packetId);
     LogList *log = pxHistoryLogs[msg->senderId];
 
     // if it doesn't need repeating, return
     if (!log->needsRepeating(msg)) { return; }
 
-    // If the web server is up
-    if ((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_SLEEP_READY) == 0)
+    // if the web app is down, write to the sd card, otherwise send to web task
+    if ((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_SLEEP_READY) == EVENTBIT_WEB_SLEEP_READY)
     {
-        xQueueSend(_qToWeb, &msg, MAX_TICKS_TO_WAIT);
+        sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+        SD.begin(SD_CS);
+        msg->appendHistory();
+        SD.end();
+        sdSPI.end();
+    } else {
+        xQueueSend(qToWeb, &msg, MAX_TICKS_TO_WAIT);
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TX_READY);
     }
     handleTx(msg, log);
@@ -107,25 +86,26 @@ void FloraNetProto::handleWeb()
 {
     // read in message
     Message *msg;
-    xQueueReceive(_qFromWeb, &msg, MAX_TICKS_TO_WAIT);
+    xQueueReceive(qFromWeb, &msg, MAX_TICKS_TO_WAIT);
+    DBG_PRINTF("PhW:%i-%i", msg->senderId, msg->packetId);
     LogList *log = pxHistoryLogs[msg->senderId];
-    // send to sd card
-    appendHistory(msg);
+
     // transmit to mesh
     handleTx(msg, log);
 }
 
 bool FloraNetProto::readyToSleep()
 {
+    taskYIELD(); // for wdt
     // check if all queues are clear
     uint8_t queuesClear = 0;
 
-    if(uxQueueMessagesWaiting(_qFromMesh) == 0)
+    if(uxQueueMessagesWaiting(qFromMesh) == 0)
     {
         xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_DONE);
         queuesClear++;
     }
-    if (uxQueueMessagesWaiting(_qFromWeb) == 0)
+    if (uxQueueMessagesWaiting(qFromWeb) == 0)
     {
         xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_RX_DONE);
         queuesClear++;
@@ -141,6 +121,8 @@ bool FloraNetProto::readyToSleep()
     {
         return false;
     } 
+
+    
 
     // wait for any messages needing to be acknowledged or retries that might be expiring
     long timeout = maxTimeOnAir * LORA_TX_WAIT_INTERVAL_MAX * 3;
@@ -169,7 +151,9 @@ void FloraNetProto::run()
     // make sure we don't go to sleep
     xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
     init();     // init stuff
+    #ifdef POWER_SAVER
     xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);    // ok ready to sleep again
+    #endif
     while (true)
     {
         // wait for an event

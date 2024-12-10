@@ -19,11 +19,20 @@ void FloraNetWeb::initWebServer() // Initializes web server stuff
   DBG_PRINTLN("Access Point IP address: ");
   DBG_PRINTLN(WiFi.softAPIP());
 
-  _server->begin();
+  // init sd card
+
+  sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+
+  if (!SD.begin(SD_CS))
+  {
+    DBG_PRINTLN("Failed to initialize the SD card.");
+  }
+
+  server.begin();
   DBG_PRINTLN("Web server started!");
 
-  _server->serveStatic("/", SD, "/").setDefaultFile("index.html");
-  _server->addHandler(_ws);
+  server.serveStatic("/", SD, "/").setDefaultFile("index.html");
+  server.addHandler(&ws);
 
   // start DNS
 
@@ -35,7 +44,7 @@ void FloraNetWeb::initWebServer() // Initializes web server stuff
   MDNS.addService("http", "tcp", 80);
 
   // add websocket service
-  _ws->onEvent(onWsEvent);
+  ws.onEvent(onWsEvent);
 
   currentId = 0;
   return;
@@ -65,13 +74,13 @@ void FloraNetWeb::runServer()
     {
       // read in the message from the protocol task
       Message *msg;
-      xQueueReceive(_inbox, &msg, MAX_TICKS_TO_WAIT);
-
+      xQueueReceive(qToWeb, &msg, MAX_TICKS_TO_WAIT);
+      msg->appendHistory();
       // convert to json string and send over the web socket
-      _ws->textAll(msg->toSerialJson());
+      ws.textAll(msg->toSerialJson());
     }
 
-    if (uxQueueMessagesWaiting(_inbox) == 0)
+    if (uxQueueMessagesWaiting(qToWeb) == 0)
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
     }
@@ -82,7 +91,9 @@ void FloraNetWeb::runServer()
 void FloraNetWeb::run() {
   pinMode(USER_BUTTON, INPUT_PULLUP);
   attachInterrupt(USER_BUTTON, buttonISR, LOW);
+  #ifdef POWER_SAVER
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+  #endif
   while (true) {
     xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_REQUESTED, false, false, portMAX_DELAY);
     xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED | EVENTBIT_WEB_SLEEP_READY);
@@ -90,7 +101,9 @@ void FloraNetWeb::run() {
     runServer();
     // upon timeout, clean up servers and attach button interrupt
     MDNS.end();
-    _server->end();
+    server.end();
+    SD.end();
+    sdSPI.end();
     pinMode(USER_BUTTON, INPUT_PULLUP);
     attachInterrupt(USER_BUTTON, buttonISR, LOW);
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);

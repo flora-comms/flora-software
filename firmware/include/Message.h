@@ -33,7 +33,6 @@ public:
     /// @return The length of the serialized lora packet
     uint16_t toLoraPacket(uint8_t *buf);
 
-    /// @brief Appends the payload to a file.
-    /// @param filename the filename to be appended to.
-    void appendHistory(String filename);
+    /// @brief Appends the payload to the chat history file
+    void appendHistory();
 };
