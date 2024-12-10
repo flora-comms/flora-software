@@ -12,7 +12,6 @@ void FloraNetProto::init()
 void FloraNetProto::handleEvents()
 {
     do {
-        YIELD();    // for wdt
         EventBits_t eventbits = xEventGroupGetBits(xEventGroup);
         if ((eventbits & EVENTBIT_LORA_RX_DONE) != 0) {
             handleLora();
@@ -99,8 +98,6 @@ void FloraNetProto::handleLora()
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TX_READY);
     }
 
-    
-    
     handleTx(msg, log);
 }
 

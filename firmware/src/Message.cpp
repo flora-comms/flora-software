@@ -74,7 +74,6 @@ uint16_t Message::toLoraPacket(uint8_t *buf)
     {
         buf[len++] = *cstr++;
     }
-    len++;
     buf[len] = '\0'; // get total packet length
     return len;
 }

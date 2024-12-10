@@ -53,7 +53,7 @@ void FloraNetWeb::runServer()
   while (true)
   {
     // wait for an action or 5 min timeout
-    EventBits_t eventBits = xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION, false, true, pdMS_TO_TICKS(300000));
+    EventBits_t eventBits = xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION, false, false, pdMS_TO_TICKS(300000));
 
     // if timeout, return
     if ((eventBits & (EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION)) == 0)
@@ -69,7 +69,7 @@ void FloraNetWeb::runServer()
     }
 
     // if a message is ready
-    if ((eventBits & EVENTBIT_WEB_TX_READY) != 0)
+    if ((eventBits & EVENTBIT_WEB_TX_READY) == EVENTBIT_WEB_TX_READY)
     {
       // read in the message from the protocol task
       Message *msg;
@@ -82,9 +82,7 @@ void FloraNetWeb::runServer()
     if (uxQueueMessagesWaiting(qToWeb) == 0)
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
-    } else {
-      YIELD();
-    }
+    } 
   }
 }
 
@@ -105,6 +103,8 @@ void FloraNetWeb::run() {
     server.end();
     SD.end();
     sdSPI.end();
+    WiFi.softAPdisconnect( true );
+    WiFi.mode(WIFI_OFF);
     pinMode(USER_BUTTON, INPUT_PULLUP);
     attachInterrupt(USER_BUTTON, buttonISR, LOW);
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
