@@ -8,7 +8,6 @@ private:
     TaskHandle_t _tskLora;
     TaskHandle_t _tskWeb;
     TaskHandle_t _tskProto;
-    SX1262*     _radio;
 
     /// @brief Handles a ready to sleep event
     void handleSleep();
@@ -18,7 +17,7 @@ public:
     /// @param web the web task handle
     /// @param proto the protcol task handle
     /// @param radio pointer to the lora radio module.
-    FloraNetPower(TaskHandle_t lora, TaskHandle_t web, TaskHandle_t proto, SX1262* radio) { _tskLora = lora; _tskWeb = web; _tskProto = proto; _radio = radio; }
+    FloraNetPower(TaskHandle_t lora, TaskHandle_t web, TaskHandle_t proto) { _tskLora = lora; _tskWeb = web; _tskProto = proto; }
 
     /// @brief Runs the power manager handler
     void run();

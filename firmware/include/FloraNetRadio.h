@@ -19,20 +19,10 @@ FLORANET Layer 1 and 2 interfacing
 /// @brief Handles the LoRa hardware.
 class FloraNetRadio {
 private:
-    SX1262 *_radio;
     QueueHandle_t _inbox;
     QueueHandle_t _outbox;
 
-    /// @brief Constructor
-    /// @param radio the lora radio hardware to use
-    /// @param inbox The queue to transmit messages from
-    /// @param outbox the queue to send received messages to
-    FloraNetRadio(SX1262 *radio, QueueHandle_t inbox, QueueHandle_t outbox)
-    {
-        _radio = radio;
-        _inbox = inbox;
-        _outbox = outbox;
-    }
+    
 
     /// @brief Radio starts recieving
     void startRx();
@@ -50,6 +40,16 @@ private:
     void prepForSleep();
 
 public:
+    /// @brief Constructor
+    /// @param radio the lora radio hardware to use
+    /// @param inbox The queue to transmit messages from
+    /// @param outbox the queue to send received messages to
+    FloraNetRadio(QueueHandle_t inbox, QueueHandle_t outbox)
+    {
+        _inbox = inbox;
+        _outbox = outbox;
+    }
+
     /// @brief Runs the radio handler instance.
     void run();
 };

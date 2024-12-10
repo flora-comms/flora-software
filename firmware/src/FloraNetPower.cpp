@@ -13,7 +13,7 @@ void FloraNetPower::handleSleep()
         {
             xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
         } else {
-            _radio->setDio1Action(RxISR);
+            radio.setDio1Action(RxISR);
         }
         return;
     }
@@ -53,6 +53,11 @@ void FloraNetPower::handleSleep()
     vTaskDelay(pdMS_TO_TICKS(200));
     #endif
     esp_light_sleep_start();
+    #ifdef DEBUG
+    Serial.begin(SERIAL_BAUD);
+    vTaskDelay(pdMS_TO_TICKS(5000));
+#endif
+    
     DBG_PRINTLN("Woke up!");
     #ifdef DEBUG
         vTaskDelay(pdMS_TO_TICKS(200));
@@ -73,7 +78,7 @@ void FloraNetPower::handleSleep()
         }
         else
         {
-            _radio->setDio1Action(RxISR); // Re-attach interupt
+            radio.setDio1Action(RxISR); // Re-attach interupt
         }
         // resume tasks
         CRITICAL_SECTION(

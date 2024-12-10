@@ -1,5 +1,7 @@
 // Config preprocessor logic based on FloraNetConfig.h
 
+// mess with this at your own risk
+
 #ifndef FLORANET_CONFIG_H
 #define FLORANET_CONFIG_H
 
@@ -41,7 +43,7 @@
 #define MAX_TICKS_TO_WAIT   10     // maximum ticks to wait when writing to queues
 
 // task priorities
-#define TASK_PRIORITY_LORA configTIMER_TASK_PRIORITY + 4
+#define TASK_PRIORITY_LORA  configTIMER_TASK_PRIORITY + 4
 #define TASK_PRIORITY_PROTO configTIMER_TASK_PRIORITY + 3
 #define TASK_PRIORITY_WEB   configTIMER_TASK_PRIORITY + 2
 #define TASK_PRIORITY_POWER configTIMER_TASK_PRIORITY + 1

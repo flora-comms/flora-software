@@ -80,7 +80,7 @@ void FloraNetWeb::runServer()
 
 // public
 void FloraNetWeb::run() {
-
+  pinMode(USER_BUTTON, INPUT_PULLUP);
   attachInterrupt(USER_BUTTON, buttonISR, LOW);
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
   while (true) {
@@ -91,6 +91,7 @@ void FloraNetWeb::run() {
     // upon timeout, clean up servers and attach button interrupt
     MDNS.end();
     _server->end();
+    pinMode(USER_BUTTON, INPUT_PULLUP);
     attachInterrupt(USER_BUTTON, buttonISR, LOW);
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
   }

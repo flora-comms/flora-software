@@ -20,6 +20,8 @@ FloraNet utilities. All necessary include files to run FloraNet.
 // Globals
 extern EventGroupHandle_t xEventGroup;
 extern portMUX_TYPE csToken;            // spinlock for critical sections
+extern SX1262 radio;
+extern SPIClass loraSPI;
 
 // for timer task
 extern QueueHandle_t qRetries;          // the retry queue
@@ -33,11 +35,11 @@ extern long maxTimeOnAir;
 
 // ISRs
 /// @brief LoRa RX interrupt handler
-static void RxISR(void);
+void RxISR(void);
 
 /// @brief LoRa TX interrupt handler
-static void TxISR(void);
+void TxISR(void);
 
 /// @brief User button press ISR
-static void buttonISR(void);
+void buttonISR(void);
 #endif // FLORANET_UTILS_H

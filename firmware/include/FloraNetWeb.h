@@ -21,7 +21,6 @@ private:
     AsyncWebServer * _server;
     AsyncWebSocket * _ws;
     QueueHandle_t _inbox;       // the queue where messages from the protocol task are received
-    QueueHandle_t _outbox;
 
     /// @brief Initializes web server stuff
     void initWebServer();
@@ -30,7 +29,7 @@ private:
     void runServer();
 
 public:
-    FloraNetWeb(QueueHandle_t inbox, QueueHandle_t outbox) {
+    FloraNetWeb(QueueHandle_t inbox) {
         _server = new AsyncWebServer(80);
         _ws = new AsyncWebSocket(WEBSOCKET_ENDPOINT);
         _inbox = inbox;

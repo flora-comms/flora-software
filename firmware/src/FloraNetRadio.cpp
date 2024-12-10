@@ -7,8 +7,8 @@ void FloraNetRadio::startRx() {
     xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
     // attach the rx isr to DIO1 and start recieving
     CRITICAL_SECTION(
-        _radio->setDio1Action(RxISR);
-        _radio->startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE)   // single rx mode
+        radio.setDio1Action(RxISR);
+        radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE)   // single rx mode
         )
 }
 void FloraNetRadio::handleTx() {
@@ -21,7 +21,7 @@ void FloraNetRadio::handleTx() {
 
     // start transmitting
     CRITICAL_SECTION(
-        int status = _radio->startTransmit(buf, len)
+        int status = radio.startTransmit(buf, len)
     )
 
     // check for issues
@@ -39,7 +39,7 @@ void FloraNetRadio::initLora() {
 
     CRITICAL_SECTION
     (
-        int status = _radio->begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB)
+        int status = radio.begin(LORA_FREQ, LORA_BW, LORA_SF, LORA_CR, LORA_SYNC, LORA_POWER, LORA_PREAMB)
     )
 
     if (status == RADIOLIB_ERR_NONE)
@@ -53,11 +53,11 @@ void FloraNetRadio::initLora() {
     }
 
     CRITICAL_SECTION(
-        _radio->setCurrentLimit(60.0);
-        _radio->setDio2AsRfSwitch(true);
-        _radio->explicitHeader();
-        _radio->setCRC(2);
-        randomSeed(_radio->getRSSI()))
+        radio.setCurrentLimit(60.0);
+        radio.setDio2AsRfSwitch(true);
+        radio.explicitHeader();
+        radio.setCRC(2);
+        randomSeed(radio.getRSSI()))
     
 }
 
@@ -68,7 +68,7 @@ void FloraNetRadio::handleRx() {
     // read the received data into the buffer
     CRITICAL_SECTION 
     (
-        int status = _radio->readData(rx_data, 0)
+        int status = radio.readData(rx_data, 0)
     )
 
     // start receiving again
@@ -96,7 +96,7 @@ void FloraNetRadio::prepForSleep() {
 
     // clear flags and start receiving with no dio1 action
     xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_READY);
-    CRITICAL_SECTION(_radio->clearDio1Action(); _radio->startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE))
+    CRITICAL_SECTION(radio.clearDio1Action(); radio.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE))
     // set lora sleep
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
 }

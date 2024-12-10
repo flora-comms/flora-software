@@ -8,14 +8,23 @@ QueueHandle_t qFromWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 uint8_t currentId = 0;
 EventGroupHandle_t xEventGroup = xEventGroupCreate();
 
-static portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
 
 long maxTimeOnAir = 0;
+
+SPIClass loraSPI(HSPI);
+
+SX1262 radio = new Module(
+    LORA_NSS,
+    LORA_IRQ,
+    LORA_NRST,
+    LORA_BUSY,
+    loraSPI);
 
 // ISRs
 
 /// @brief LoRa RX interrupt handler
-static void RxISR(void)
+void RxISR(void)
 {
     BaseType_t xHigherPriorityTaskWoken, xResult;
 
@@ -38,7 +47,7 @@ static void RxISR(void)
 }
 
 /// @brief LoRa TX interrupt handler
-static void TxISR(void){
+void TxISR(void){
     BaseType_t xHigherPriorityTaskWoken, xResult;
 
     /* xHigherPriorityTaskWoken must be initialised to pdFALSE. */
@@ -60,7 +69,7 @@ static void TxISR(void){
 }
 
 /// @brief User button press ISR
-static void buttonISR(void)
+void buttonISR(void)
 {
     detachInterrupt(USER_BUTTON);   // remove the interrupt
 
