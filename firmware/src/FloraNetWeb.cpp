@@ -45,8 +45,6 @@ void FloraNetWeb::initWebServer() // Initializes web server stuff
 
   // add websocket service
   ws.onEvent(onWsEvent);
-
-  currentId = 0;
   return;
 }
 
@@ -67,6 +65,7 @@ void FloraNetWeb::runServer()
     if ((eventBits & EVENTBIT_SOCKET_ACTION) != 0)
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_SOCKET_ACTION);
+      YIELD();
     }
 
     // if a message is ready
@@ -123,6 +122,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     ws.textAll(data, len);
     Message *rx_message = new Message(data, currentId++);
 
+    rx_message->appendHistory();
     DBG_PRINT("WS Data received: ");
 
     #ifdef DEBUG

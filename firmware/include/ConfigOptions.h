@@ -52,9 +52,9 @@ Comment out to remove debug functionality
 
 */
 
-#define DEBUG
+//#define DEBUG
 //#define USE_CS
-// #define POWER_SAVER
+#define POWER_SAVER
 /*
 
 =================================

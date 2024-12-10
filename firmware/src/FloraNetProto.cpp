@@ -74,6 +74,7 @@ void FloraNetProto::handleLora()
     LogList *log;
     if (pxHistoryLogs[msg->senderId] == nullptr)
     {
+        DBG_PRINTLN("lognf");
         log = new LogList();
         pxHistoryLogs[msg->senderId] = log;
     }
@@ -83,7 +84,7 @@ void FloraNetProto::handleLora()
     }
 
     // if it doesn't need repeating, return
-    if (!log->needsRepeating(msg)) { return; }
+    if (!log->needsRepeating(msg)) { DBG_PRINTLN("no rpt"); return; }
 
     // if the web app is down, write to the sd card, otherwise send to web task
     if ((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_SLEEP_READY) == EVENTBIT_WEB_SLEEP_READY)
@@ -124,6 +125,7 @@ void FloraNetProto::handleWeb()
     DBG_PRINTF("PhW:%i-%i", msg->senderId, msg->packetId);
     LogList* log;
     if (pxHistoryLogs[msg->senderId] == nullptr){
+        DBG_PRINTLN("lognf");
         log = new LogList();
         pxHistoryLogs[msg->senderId] = log;
     } else {
