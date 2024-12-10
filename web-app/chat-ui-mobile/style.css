@@ -1,0 +1,206 @@
+/* Chat Styling */
+/* Reset default margins and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Ensure full height for html and body */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Body setup */
+body {
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column; /* Stack main containers vertically */
+    margin: 5px;
+}
+
+/* Style for the Info Bar */
+.infoBar {
+    height: 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #ccc;
+}
+
+.logo {
+    height: 80px; /* Adjust the height of the logo */
+    width: auto;  /* Maintain aspect ratio */
+}
+
+.infoText {
+    font-size: 30px;
+    color: #333;
+}
+
+.chatContainer {
+    height: 80%; 
+    padding: 10px;
+    overflow-y: auto; /* Allow scrolling */
+    background-color: #fff;
+    border: 2px solid #898989;
+    border-radius: 10px;
+    gap: 10px;
+
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+}
+.inputContainer {
+    height: 15%; 
+    padding: 10px;
+    background-color: #ffffff; /* Optional: background for input container */
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center; /* Center elements vertically */
+    gap: 25px
+}
+
+.message {
+    padding: 20px 30px;
+    border-radius: 40px;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+.message.received {
+    background-color: #0084ff;
+    color:white;
+    align-self: flex-start;
+    font-size: 40px;
+}
+.message.sent {
+    background-color: #28a745;
+    color: white;
+    align-self: flex-end;
+    font-size: 40px;
+}
+
+.message.sent.sos-message {
+    background-color: #FF4C4C; /* Red background for sent SOS messages */
+    color: white; /* Keep white text */
+}
+
+.message.received.sos-message {
+    background-color: #FF4C4C; /* Red background for received SOS messages */
+    color: white; /* Keep white text */
+}
+
+.node-ID {
+    font-size: 30px;
+    font-style: italic;
+    color: grey;
+    margin-bottom: 4px;
+}
+
+.message-wrapper {
+    margin-bottom: 10px; /* Space between messages */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.inputSection {
+    height: 50%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+   
+}
+input {
+    height: 100%;
+    width:70%;
+    align-items: center;
+
+    font-size: 45px;
+    background-color: rgb(243, 241, 241);
+    border: 2px solid #898989;
+    border-radius: 20px;
+}
+.sendButton {
+    height: 100%;
+    width:30%;
+    align-items: center;
+
+    font-size: 45px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.sosButton {
+    height:30%;
+    font-size: 45px;
+    background-color: #e65e38;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%; /* Make SOS button full width */
+}
+
+/* Modal styling */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%; /* Full screen width */
+    height: 100%; /* Full screen height */
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(3px); /* Blurs the background */
+    justify-content: center; /* Centers modal content horizontally */
+    align-items: center; /* Centers modal content vertically */
+    text-align: center;
+    font-size: 24px;
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 2px solid #898989;
+    border-radius: 10px;
+    width: 90%; /* Adjusted to fit smaller screens */
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+    gap: 20px; /* Space between elements */
+  }
+  
+  .close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    align-self: flex-end; /* Align close button to the top-right */
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .cancelButton {
+    height: 30%;
+    font-size: 45px;
+    background-color: lightgray;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%; /* Make SOS button full width */
+  }
+  
+  
+
+
