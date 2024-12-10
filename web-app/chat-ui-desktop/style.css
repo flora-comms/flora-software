@@ -23,7 +23,7 @@ body {
 
 /* Style for the Info Bar */
 .infoBar {
-    height: 5%;
+    height: 8%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -37,9 +37,19 @@ body {
     width: auto;  /* Maintain aspect ratio */
 }
 
+.title {
+    position: absolute; /* Remove title from the flexbox flow */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust to ensure the text is perfectly centered */
+    font-size: 50px;
+    text-align: center;
+    font-family: "Gill Sans", "Gill Sans MT", sans-serif; 
+}
+
 .infoText {
     font-size: 30px;
     color: #333;
+    font-family: "Gill Sans", "Gill Sans MT", sans-serif; 
 }
 
 .chatContainer {
@@ -56,12 +66,12 @@ body {
 }
 .inputContainer {
     height: 15%; 
-    padding: 10px;
+    padding: 2px;
     background-color: #ffffff; /* Optional: background for input container */
     display: flex;
     flex-direction: column; /* Stack elements vertically */
     justify-content: center; /* Center elements vertically */
-    gap: 25px
+    gap: 10px
 }
 
 .message {
@@ -108,7 +118,7 @@ body {
 }
 
 .inputSection {
-    height: 50%;
+    height: 40%;
     display: flex;
     gap: 10px;
     align-items: center;
@@ -118,11 +128,10 @@ input {
     height: 100%;
     width:70%;
     align-items: center;
-
     font-size: 45px;
     background-color: rgb(243, 241, 241);
     border: 2px solid #898989;
-    border-radius: 20px;
+    border-radius: 10px;
 }
 .sendButton {
     height: 100%;
@@ -133,18 +142,20 @@ input {
     background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
+    line-height: 30%;
 }
 .sosButton {
-    height:30%;
+    height:40%;
     font-size: 45px;
     background-color: #e65e38;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
     width: 100%; /* Make SOS button full width */
+    line-height: 30%;
 }
 
 /* Modal styling */
@@ -194,6 +205,16 @@ input {
     height: 30%;
     font-size: 45px;
     background-color: lightgray;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%; /* Make SOS button full width */
+  }
+    .confirmButton {
+    height: 30%;
+    font-size: 45px;
+    background-color: #e65e38;
     color: white;
     border: none;
     border-radius: 20px;
