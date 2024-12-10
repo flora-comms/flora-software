@@ -33,11 +33,18 @@
 #define EVENTBIT_PREP_SLEEP         0x200   // 001000000000
 #define EVENTBIT_WEB_REQUESTED      0x400   // 010000000000
 #define EVENTBIT_SOCKET_ACTION      0x800   // 100000000000
+#define EVENTBIT_RETRY_READY        0x1000  //1000000000000
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
 #define STACK_SIZE 8192 // stack size for each task
 #define MAX_TICKS_TO_WAIT   10     // maximum ticks to wait when writing to queues
+
+// task priorities
+#define TASK_PRIORITY_LORA configTIMER_TASK_PRIORITY + 4
+#define TASK_PRIORITY_PROTO configTIMER_TASK_PRIORITY + 3
+#define TASK_PRIORITY_WEB   configTIMER_TASK_PRIORITY + 2
+#define TASK_PRIORITY_POWER configTIMER_TASK_PRIORITY + 1
 
 // HARDWARE
 
@@ -154,7 +161,7 @@
 // p2p layer config
 #define MAX_LORA_TTL 4                  // maximum TTL hop count
 #define ACKNOWLEDGE_WINDOW_SIZE 16      // number of messages that we'll keep track of in the log list
-#define RETRY_THRESHOLD         1       // The index in the LogList when a message should be retried.
+#define RETRY_INTERVAL  LORA_TX_WAIT_INTERVAL_MAX, LORA_TX_WAIT_INTERVAL_MAX * 3
 
 // WEB CONFIG
 #define HISTORY_FILENAME "/data/history.csv"

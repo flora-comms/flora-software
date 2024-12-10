@@ -29,6 +29,8 @@ extern LogList *pxHistoryLogs[256];     // array of LogList pointers containing 
 extern QueueHandle_t qFromWeb;
 extern uint8_t currentId;       // the current packet id
 
+extern long maxTimeOnAir;
+
 // ISRs
 /// @brief LoRa RX interrupt handler
 static void RxISR(void);

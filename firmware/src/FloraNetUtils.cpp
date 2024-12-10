@@ -10,6 +10,8 @@ EventGroupHandle_t xEventGroup = xEventGroupCreate();
 
 static portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
 
+long maxTimeOnAir = 0;
+
 // ISRs
 
 /// @brief LoRa RX interrupt handler

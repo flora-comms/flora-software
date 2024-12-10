@@ -11,7 +11,6 @@ void FloraNetRadio::startRx() {
         _radio->startReceive(RADIOLIB_SX126X_RX_TIMEOUT_NONE)   // single rx mode
         )
 }
-
 void FloraNetRadio::handleTx() {
 
     // recieve the message

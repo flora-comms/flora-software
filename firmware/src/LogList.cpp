@@ -1,33 +1,44 @@
 #include <LogList.h>
 
-// construction
-
-
-// private
+// Log Entry
 void LogList::removeLast()
 {
     // save the pointer of the entry at the tail
-    LogEntry *pOldTail = _tail;
+    LogEntry *pOldTail = tail;
     // make tail's previous the tail with a _next value of null
-    _tail = pOldTail->_prev;
-    _tail->_next = nullptr;
+    tail = pOldTail->prev;
+    tail->next = nullptr;
     delete (pOldTail);
     // decrement length
-    _len--;
+    len--;
     return;
+}
+
+LogEntry::LogEntry(Message *message)
+{
+    msg = message;
+    id = message->packetId;
+    ack = false;
+    next = nullptr;
+    prev = nullptr;
+}
+
+LogEntry::~LogEntry()
+{
+    delete msg;
 }
 
 bool LogList::checkId(uint8_t packetId)
 {
-    LogEntry *pCheckEntry = _root; // start at the beginning
+    LogEntry *pCheckEntry = root; // start at the beginning
     while (pCheckEntry != nullptr)
     { // while the entry is valid
-        if (packetId == pCheckEntry->_id)
+        if (packetId == pCheckEntry->id)
         { // if the packet ids match
-            pCheckEntry->_ack = true;
+            pCheckEntry->ack = true;
             return true;
         }
-        pCheckEntry = pCheckEntry->_next; // go to the next entry
+        pCheckEntry = pCheckEntry->next; // go to the next entry
     }
     return false;
 }
@@ -47,22 +58,22 @@ void LogList::update(Message *message) {
     
     LogEntry *entry = new LogEntry(message);
     // if root is null, then root and tail become entry
-    if (_root == nullptr) {
-        _root = entry;
-        _tail = _root;
+    if (root == nullptr) {
+        root = entry;
+        tail = root;
     } // if root is not null
     else {
-        entry->_next = _root;    // entry _next is root
-        _root->_prev = entry;    // the root's previous is entry
-        _root = entry;          // then the root becomes entry
+        entry->next = root;    // entry _next is root
+        root->prev = entry;    // the root's previous is entry
+        root = entry;          // then the root becomes entry
     }
     // increase length by one
-    _len++;
+    len++;
 
     // make sure the list isn't too long
-    while (_len > ACKNOWLEDGE_WINDOW_SIZE) {
+    while (len > ACKNOWLEDGE_WINDOW_SIZE) {
         removeLast();
     }
+    
     return;
 }
-
