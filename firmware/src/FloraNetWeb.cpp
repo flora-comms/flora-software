@@ -74,7 +74,7 @@ void FloraNetWeb::runServer()
     {
       // read in the message from the protocol task
       Message *msg;
-      xQueueReceive(qToWeb, &msg, MAX_TICKS_TO_WAIT);
+      QUEUE_RECEIVE(qToWeb, msg)
       msg->appendHistory();
       // convert to json string and send over the web socket
       ws.textAll(msg->toSerialJson());
@@ -83,6 +83,8 @@ void FloraNetWeb::runServer()
     if (uxQueueMessagesWaiting(qToWeb) == 0)
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
+    } else {
+      YIELD();
     }
   }
 }
@@ -118,7 +120,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
   } else if (type == WS_EVT_DISCONNECT) {
     DBG_PRINTLN("Client disconnected");
   } else if (type == WS_EVT_DATA) {
-    socket->textAll(data, len);
+    ws.textAll(data, len);
     Message *rx_message = new Message(data, currentId++);
 
     DBG_PRINT("WS Data received: ");

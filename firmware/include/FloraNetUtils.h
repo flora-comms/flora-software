@@ -21,6 +21,10 @@ FloraNet utilities. All necessary include files to run FloraNet.
 #define CRITICAL_SECTION(args...) args;
 #endif
 
+// ensures that only valid items are read in from the queue
+#define QUEUE_RECEIVE(queue, buf)   if(!xQueueReceive(queue, &buf, MAX_TICKS_TO_WAIT)) { return; }
+
+#define YIELD() vTaskDelay(1)
 #define SPI sdSPI
 // Globals
 extern EventGroupHandle_t xEventGroup;

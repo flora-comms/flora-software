@@ -12,7 +12,7 @@ void FloraNetProto::init()
 void FloraNetProto::handleEvents()
 {
     do {
-        taskYIELD();    // for wdt
+        YIELD();    // for wdt
         EventBits_t eventbits = xEventGroupGetBits(xEventGroup);
         if ((eventbits & EVENTBIT_LORA_RX_DONE) != 0) {
             handleLora();
@@ -58,11 +58,29 @@ void FloraNetProto::handleTx(Message * msg, LogList * log)
 
 void FloraNetProto::handleLora()
 {
+    // check if there's actually something to read
+    if (uxQueueMessagesWaiting(qFromMesh) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_DONE);
+    }
     // get the message from the queue
     Message *msg;
-    xQueueReceive(qFromMesh, &msg, MAX_TICKS_TO_WAIT);
-    DBG_PRINTF("PhL:%i-%i", msg->senderId, msg->packetId);
-    LogList *log = pxHistoryLogs[msg->senderId];
+    QUEUE_RECEIVE(qFromMesh, msg)
+    if (uxQueueMessagesWaiting(qFromMesh) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_RX_DONE);
+    }
+    DBG_PRINTF("PhL:%s", msg->payload);
+    LogList *log;
+    if (pxHistoryLogs[msg->senderId] == nullptr)
+    {
+        log = new LogList();
+        pxHistoryLogs[msg->senderId] = log;
+    }
+    else
+    {
+        log = pxHistoryLogs[msg->senderId];
+    }
 
     // if it doesn't need repeating, return
     if (!log->needsRepeating(msg)) { return; }
@@ -79,24 +97,47 @@ void FloraNetProto::handleLora()
         xQueueSend(qToWeb, &msg, MAX_TICKS_TO_WAIT);
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TX_READY);
     }
+
+    
+    
     handleTx(msg, log);
 }
 
 void FloraNetProto::handleWeb()
 {
+    // check if there's actually something to read garbage call
+    if (uxQueueMessagesWaiting(qFromWeb) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_RX_DONE);
+        return;
+    }
+    
     // read in message
     Message *msg;
-    xQueueReceive(qFromWeb, &msg, MAX_TICKS_TO_WAIT);
-    DBG_PRINTF("PhW:%i-%i", msg->senderId, msg->packetId);
-    LogList *log = pxHistoryLogs[msg->senderId];
+    QUEUE_RECEIVE(qFromWeb, msg)
 
+    // clear event bit if necessary
+    if (uxQueueMessagesWaiting(qFromWeb) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_RX_DONE);
+    }
+    DBG_PRINTF("PhW:%i-%i", msg->senderId, msg->packetId);
+    LogList* log;
+    if (pxHistoryLogs[msg->senderId] == nullptr){
+        log = new LogList();
+        pxHistoryLogs[msg->senderId] = log;
+    } else {
+        log = pxHistoryLogs[msg->senderId];
+    }
+
+    
     // transmit to mesh
     handleTx(msg, log);
 }
 
 bool FloraNetProto::readyToSleep()
 {
-    taskYIELD(); // for wdt
+    YIELD(); // for wdt
     // check if all queues are clear
     uint8_t queuesClear = 0;
 
@@ -150,7 +191,6 @@ void FloraNetProto::run()
 {
     // make sure we don't go to sleep
     xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
-    init();     // init stuff
     #ifdef POWER_SAVER
     xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);    // ok ready to sleep again
     #endif

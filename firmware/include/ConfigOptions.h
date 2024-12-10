@@ -40,7 +40,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Dos" // WiFi network name
+#define WIFI_SSID "FloraNet" // WiFi network name
 
 /*
 

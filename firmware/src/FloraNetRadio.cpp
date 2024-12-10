@@ -13,10 +13,23 @@ void FloraNetRadio::startRx() {
 }
 void FloraNetRadio::handleTx() {
 
+    // check if there's actually something to read (not a garbage call)
+    if (uxQueueMessagesWaiting(qToMesh) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_READY);
+        return;
+    }
     // recieve the message
     Message * msg;
-    xQueueReceive(qToMesh, &msg, MAX_TICKS_TO_WAIT);
-    DBG_PRINTF("RhT:%i-%i", msg->senderId, msg->packetId);
+    QUEUE_RECEIVE(qToMesh, msg)
+
+    // clear the event bit if the queue is empty
+    if (uxQueueMessagesWaiting(qToMesh) == 0)
+    {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_READY);
+    }
+
+    DBG_PRINTF("\nRhT:%s", msg->payload);
     uint8_t buf[256];
     uint16_t len = msg->toLoraPacket(buf);
 
@@ -34,8 +47,9 @@ void FloraNetRadio::handleTx() {
     DBG_PRINTLN("LTX suc");
 
     // wait for the transmission to finish
-    xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_TX_DONE, true, true, MAX_TICKS_TO_WAIT);
+    xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_TX_DONE, true, true, pdMS_TO_TICKS(maxTimeOnAir));
     xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_DONE);
+    startRx();
 }
 
 void FloraNetRadio::initLora() {
@@ -72,9 +86,6 @@ void FloraNetRadio::handleRx() {
     (
         int status = radio.readData(rx_data, 0)
     )
-
-    
-
     // start receiving again
     startRx();
 
@@ -85,19 +96,20 @@ void FloraNetRadio::handleRx() {
 
     Message *pxRxMsg = new Message(rx_data);
 
-    DBG_PRINTF("RhR:%i-%i",pxRxMsg->senderId, pxRxMsg->packetId);
+    DBG_PRINTF("\nRhR:%s",pxRxMsg->payload);
 
     xQueueSend(qFromMesh, &pxRxMsg, MAX_TICKS_TO_WAIT);
 
-    xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE); // notify protocol task
+    xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_DONE); // notify protocol task
 
     return;
 }    
 
 void FloraNetRadio::prepForSleep() {
-    while (uxQueueMessagesWaiting(qToMesh) != 0) 
+    while (uxQueueMessagesWaiting(qToMesh) > 0) 
     {
         handleTx();
+        YIELD(); // for wdt
     }
 
     // clear flags and start receiving with no dio1 action
@@ -129,15 +141,9 @@ void FloraNetRadio::run() {
         }
 
         if ((eventBits & EVENTBIT_LORA_TX_READY) != 0) {
-            // handle the transmission
+            // handle the transmission and then yield for wdt
             handleTx();
-
-            // if there are no more messages in the queue, clear tx ready event flag and start receiving
-            if (uxQueueMessagesWaiting(qToMesh) == 0)
-            {
-                xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_TX_READY);
-                startRx();
-            }
+            YIELD();
         }
         if ((eventBits & EVENTBIT_PREP_SLEEP) != 0) {
             xEventGroupClearBits(xEventGroup, EVENTBIT_PREP_SLEEP);
