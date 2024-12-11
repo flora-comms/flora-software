@@ -1,7 +1,7 @@
 import Message from './message.js';
 
-// const WEBSOCKET_URL = 'ws://localhost:5050';
-const WEBSOCKET_URL = 'ws://floranet.local/chat';
+// const WEBSOCKET_URL = 'ws://localhost:5050';  //Test URL for node.js
+const WEBSOCKET_URL = 'ws://floranet.local/chat';  // Petal URL
 
 export default class ChatHandler {
   constructor() {
