@@ -1,12 +1,12 @@
 /*
-======   AVAlink Firmware Config  ======
+======   FloraNet Firmware Config  ======
 
-Version: v1.0
-Last Update: Nov 6 2024
+Version: v2.0
+Last Update: Dec 09 2024
 
 ======   DESCRIPTION   =====
 
-Configuration options for building and flashing AVAlink firmware.
+Configuration options for building and flashing FloraNet firmware.
 For hardware details such as pin numbers, bandwidth, etc., or to add your own
 custom hardware values, see HardwareConfig.h
 */
@@ -39,14 +39,8 @@ FIRMWARE
 
 Variables for firmware configuration
 */
-#define WIFI_SSID "FloraNet Noyse" // WiFi network name
-#define WEBSERVER_DNS                                                          \
-  "floranet" // puts domain at "http://{WEBSERVER_DNS}.local"
-#define WEBSOCKET_ENDPOINT                                                     \
-  "/chat" // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
-#define MAX_LORA_TTL 4  // maximum TTL hop count
-#define QUEUE_LENGTH 10 // freertos queue length
-#define STACK_SIZE 8192 // stack size for each task
+
+#define WIFI_SSID "FloraNet Desk" // WiFi network name
 
 /*
 
@@ -57,9 +51,10 @@ DEBUGGING
 Comment out to remove debug functionality
 
 */
-
-#define DEBUG
-
+//#define DEBUG
+//#define USE_CS
+#define POWER_SAVER
+//#define TEST_SLEEP
 /*
 
 =================================

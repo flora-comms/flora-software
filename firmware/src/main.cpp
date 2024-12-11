@@ -14,23 +14,31 @@ To configure the firmware, follow the instructions in include/ConfigOptions.h
 // ---------------- INCLUDES ---------------- //
 
 #include <FloraNet.h>
-// ---------------- CLASSES ---------------- //
-
-
-// ---------------- GLOBALS ---------------- //
-TaskHandle_t xLoraTask;
-TaskHandle_t xWebTask;
-// ---------------- PROTOTYPES ---------------- //
 
 
 // ---------------- MAIN ---------------- //
 
 void setup() {
-  
-  initFloraNet(); // initialize hardware
-
-  xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, (void *)1, 1, &xLoraTask, CORE_LORA); 
-  xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, (void *) 1, 0, &xWebTask, CORE_WEB);
+  #ifdef DEBUG
+  Serial.begin(SERIAL_BAUD);
+  #endif
+  pinMode(16, OUTPUT);
+  pinMode(17, OUTPUT);
+  pinMode(18, OUTPUT);
+  for (int i = 0; i < 5; i++)
+  {
+    digitalWrite(16, HIGH);
+    digitalWrite(17, HIGH);
+    digitalWrite(18, HIGH);
+    delay(500);
+    digitalWrite(16, LOW);
+    digitalWrite(17, LOW);
+    digitalWrite(18, LOW);
+    delay(500);
+  }
+  FloraNet *floranet = new FloraNet();
+  xEventGroupClearBits(xEventGroup, (EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_WEB_SLEEP_READY));
+  floranet->run();
 }
 void loop() {
   

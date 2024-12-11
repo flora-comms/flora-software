@@ -1,6 +1,5 @@
 #include <FloraNetConfig.h>
 
-
 /// @brief Message class. Intermediate between a web chat and a lora packet for inter-task communications
 class Message
 {
@@ -10,12 +9,11 @@ public:
     uint8_t packetId; // the packetId associated with the message
     uint8_t ttl;      // the message time to live
     uint8_t dest;     // the Node ID of the destination
-    bool isRetry;     // if the message is a retry
+
 
     /// @brief Default Message constructor
     Message();
-
-
+    
     /// @brief Converts serial data that already contains a packet id into a message
     /// @param bytes The lora pacekt byte buffer to convert from
     Message(uint8_t *bytes);
@@ -36,7 +34,6 @@ public:
     /// @return The length of the serialized lora packet
     uint16_t toLoraPacket(uint8_t *buf);
 
-    /// @brief Appends the payload to a file.
-    /// @param filename the filename to be appended to.
-    void appendHistory(String filename);
+    /// @brief Appends the payload to the chat history file
+    void appendHistory();
 };

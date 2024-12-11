@@ -1,68 +1,90 @@
 #include <LogList.h>
 
-void LogList::update(Message *message) {
-    
-    LogEntry *entry = new LogEntry(message);
-    // if root is null, then root and tail become entry
-    if (_root == nullptr) {
-        _root = entry;
-        _tail = _root;
-    } // if root is not null
-    else {
-        entry->_next = _root;    // entry _next is root
-        _root->_prev = entry;    // the root's previous is entry
-        _root = entry;          // then the root becomes entry
-    }
-    // increase length by one
-    _len++;
-
-    // now that the list has the new message on top, see if we need to retry any messages
-    if (_len > RETRY_THRESHOLD) {
-        checkForRetries();
-    }
-
-    // make sure the list isn't too long
-    while (_len >= ACKNOWLEDGE_WINDOW_SIZE) {
-        removeLast();
-    }
-    return;
-}
-
-void LogList::removeLast() {
-    
+// Log Entry
+void LogList::removeLast()
+{
     // save the pointer of the entry at the tail
-    LogEntry *pOldTail = _tail;
+    LogEntry *pOldTail = tail;
     // make tail's previous the tail with a _next value of null
-    _tail = pOldTail->_prev;
-    _tail->_next = nullptr;
-    delete(pOldTail);
+    tail = pOldTail->prev;
+    tail->next = nullptr;
+    delete (pOldTail);
     // decrement length
-    _len--;
+    len--;
     return;
 }
 
-bool LogList::checkId(uint8_t packetId) {
-    LogEntry *pCheckEntry = _root;  // start at the beginning
-    while (pCheckEntry != nullptr) { // while the entry is valid
-        if (packetId ==  pCheckEntry->_id) {    // if the packet ids match
-            pCheckEntry->_ack = true;
+LogEntry::LogEntry(Message *message)
+{
+    msg = message;
+    id = message->packetId;
+    ack = false;
+    next = nullptr;
+    prev = nullptr;
+    retryTimer = NULL;
+}
+
+LogEntry::~LogEntry()
+{
+    delete msg;
+}
+
+bool LogList::checkId(uint8_t packetId)
+{
+    LogEntry *pCheckEntry = root; // start at the beginning
+    while (pCheckEntry != nullptr)
+    { // while the entry is valid
+        uint8_t id = pCheckEntry->id;
+        bool ack = pCheckEntry->ack;
+        if ((packetId == id) & ack) // if the packet ids match and the message has already been acknowledged
+        {
             return true;
         }
-        pCheckEntry = pCheckEntry->_next;   // go to the next entry
+
+        if ((packetId == id) & !ack) { // if the packet ids match but the message hasn't been acknowledged
+            // delete the retry timer and acknowledge
+            TimerHandle_t timer = pCheckEntry->retryTimer;
+            xTimerStop(timer, MAX_TICKS_TO_WAIT);
+            xTimerDelete(timer, MAX_TICKS_TO_WAIT);
+            pCheckEntry->ack = true;
+            return true;
+        }
+        pCheckEntry = pCheckEntry->next; // go to the next entry
     }
     return false;
 }
 
-void LogList::checkForRetries() {
-    uint8_t index = 0;
-    LogEntry* pCheckEntry = _root;  // start at the top of the list
-    while (index != RETRY_THRESHOLD) {  // while we havent reached the index threshold
-        pCheckEntry = pCheckEntry->_next;   // go to the next index
-        index++;
+// public
+bool LogList::needsRepeating(Message *message)
+{   
+    // if no more hops remaining
+    if (message->ttl == 0) {
+        return false;
     }
-    if (!pCheckEntry->_ack) {    // if the message hasnt been acknowledged
-        pCheckEntry->_msg->isRetry = true;      // set the isRetry value of the message to True
-        xQueueSendToFront(qToMesh, &pCheckEntry->_msg, 0);  // send to the front for a retry
+    // check if the packet id has been seen recently
+    return !checkId(message->packetId);
+}
+
+void LogList::update(Message *message) {
+    
+    LogEntry *entry = new LogEntry(message);
+    // if root is null, then root and tail become entry
+    if (root == nullptr) {
+        root = entry;
+        tail = root;
+    } // if root is not null
+    else {
+        entry->next = root;    // entry _next is root
+        root->prev = entry;    // the root's previous is entry
+        root = entry;          // then the root becomes entry
     }
+    // increase length by one
+    len++;
+
+    // make sure the list isn't too long
+    while (len > ACKNOWLEDGE_WINDOW_SIZE) {
+        removeLast();
+    }
+    
     return;
 }

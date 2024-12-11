@@ -12,23 +12,27 @@ AVAlink web server interface
 
 #ifndef AVALINK_WEB_H
 #define AVALINK_WEB_H
-#pragma once
 
 #include <FloraNetUtils.h>
 
-// ---- GLOBALS ---- //
+// handles the web server
+class FloraNetWeb {
+private:
 
-extern uint8_t currentId;   // the current packet id
+    /// @brief Initializes web server stuff
+    void initWebServer();
 
-// ---- TYPEDEF ----- //
+    /// @brief Runs the web server until timeout
+    void runServer();
 
-enum WebError { WEB_ERR_NONE, WEB_ERR_SD, WEB_ERR_WIFI_AP };
+    /// @brief turns off server, mDNS, ws, and WiFi AP
+    void cleanWebServer();
 
-enum MsgType { TEXT, SOS };
-
-enum MsgSource { LORA, JSON };
-
-
+public:
+    FloraNetWeb() {};
+    /// @brief Runs the web service handler.
+    void run();
+};
 
 /// @brief Web socket event handler
 /// @param socket the web socket
@@ -41,9 +45,9 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
                AwsEventType type, void *arg, uint8_t *data, size_t len);
 
 /// @brief Web task function
-void webTask(void *);
+extern "C" void webTask(void * pvParameter);
 
-/// @brief Initializes web server stuff
-WebError initWebServer();
-
+/// @brief Callback for the web timeout timer.
+/// @param xTimer The timer calling the function.
+extern "C" void WebTimeoutCallback( TimerHandle_t xTimer );
 #endif

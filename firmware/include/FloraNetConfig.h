@@ -1,7 +1,9 @@
-// Config preprocessor logic based on AVAlinkConfig.h
+// Config preprocessor logic based on FloraNetConfig.h
 
-#ifndef AVALINK_CONFIG_H
-#define AVALINK_CONFIG_H
+// mess with this at your own risk
+
+#ifndef FLORANET_CONFIG_H
+#define FLORANET_CONFIG_H
 
 #include <FloraNetDebug.h>
 #include <ArduinoJson.h>
@@ -13,26 +15,39 @@
 #include <SPI.h>
 #include <RadioLib.h>
 
+// Web server
+#define WEBSERVER_DNS "floranet"   // puts domain at "http://{WEBSERVER_DNS}.local"
+#define WEBSOCKET_ENDPOINT "/chat" // puts websocket at "ws://{WEBSERVER_DNS}/{WEBSOCKET_ENDPOINT}"
+
 // FREERTOS
 
 // Event Group
 
-// phy <--> p2p
-#define EVENTBIT_LORA_Q 0x1             // 00000001
-#define EVENTBIT_LORA_TX 0x2       // 00000010
-#define EVENTBIT_LORA_RX 0x4            // 00000100
-#define EVENTBIT_LORA_CAD 0x8           // 00001000
-#define EVENTBIT_WEB_READY  0x10        // 00010000
-#define EVENTBIT_SERIAL 0x20            // 00100000
-#define EVENTBIT_LORA_TX_READY 0x40     // 01000000
-
-// web <--> phy
+#define EVENTBIT_LORA_TX_READY      0x1     // 00000000000010
+#define EVENTBIT_LORA_TX_DONE       0x2     // 00000000000100
+#define EVENTBIT_LORA_RX_READY      0x4     // 00000000001000
+#define EVENTBIT_LORA_RX_DONE       0x8     // 00000000010000
+#define EVENTBIT_WEB_TX_READY       0x10    // 00000000100000
+#define EVENTBIT_WEB_RX_DONE        0x20    // 00000001000000
+#define EVENTBIT_LORA_SLEEP_READY   0x40    // 00000010000000
+#define EVENTBIT_WEB_SLEEP_READY    0x80    // 00000100000000
+#define EVENTBIT_PROTO_SLEEP_READY  0x100   // 00001000000000
+#define EVENTBIT_PREP_SLEEP         0x200   // 00010000000000
+#define EVENTBIT_WEB_REQUESTED      0x400   // 00100000000000
+#define EVENTBIT_SOCKET_ACTION      0x800   // 01000000000000
+#define EVENTBIT_RETRY_READY        0x1000  // 01000000000000
+#define EVENTBIT_WEB_TIMEOUT        0x2000  // 10000000000000
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
 #define STACK_SIZE 8192 // stack size for each task
+#define MAX_TICKS_TO_WAIT   10     // maximum ticks to wait when writing to queues
 
-
+// task priorities
+#define TASK_PRIORITY_LORA  configTIMER_TASK_PRIORITY + 4
+#define TASK_PRIORITY_PROTO configTIMER_TASK_PRIORITY + 3
+#define TASK_PRIORITY_WEB   configTIMER_TASK_PRIORITY + 2
+#define TASK_PRIORITY_POWER configTIMER_TASK_PRIORITY + 1
 
 // HARDWARE
 
@@ -70,6 +85,8 @@
 #define LORA_MISO 37
 #define LORA_SCK 36
 
+#define USER_BUTTON 14
+
 #endif
 
 // S3 processor options
@@ -84,7 +101,7 @@
 #define LORA_SYNC 0x34  // sync word
 #define LORA_POWER 17   // tx power in dBm
 #define LORA_PREAMB 16  // # of symbols in preamble
-
+#define MAX_LORA_TTL 4  // maximum TTL hop count
 
 // lora modes
 
@@ -147,22 +164,19 @@
 // p2p layer config
 #define MAX_LORA_TTL 4                  // maximum TTL hop count
 #define ACKNOWLEDGE_WINDOW_SIZE 16      // number of messages that we'll keep track of in the log list
-#define RETRY_THRESHOLD         1       // The index in the LogList when a message should be retried.
+#define RETRY_INTERVAL_MAX  30          // maximum number of seconds to wait for a retry
+#define RETRY_INTERVAL_MIN  15          // minimum number of seconds to wait for a retry
+#define RETRY_INTERVAL  RETRY_INTERVAL_MIN, RETRY_INTERVAL_MAX  // between 30s and 1 min
 
 // WEB CONFIG
-#define HISTORY_FILENAME "/data/history.csv"
+#define HISTORY_FILENAME    "/data/history.csv"
 
+#ifdef TEST_SLEEP
+#define WEB_TIMEOUT         30000       // the web timeout in ms
+#else
+#define WEB_TIMEOUT         300000      // the web timeout in ms (default 5 min)
+#endif
 // GLOBAL VARIABLES
 
-extern QueueHandle_t        qToMesh;    // the queue from the web task to the lora task
-extern QueueHandle_t        qToWeb;     // the queue from the lora task to the web task
-extern bool                 bApIsUp;    // is the wifi ap up?
-extern SX1262               radio;
-extern SPIClass             sdSPI;
-extern SPIClass             loraSPI;
-extern EventGroupHandle_t   xAvalinkEventGroup;
-extern AsyncWebServer       server;
-extern AsyncWebSocket       ws;
-extern TaskHandle_t         xLoraTask;
-extern TaskHandle_t         xWebTask;
+
 #endif

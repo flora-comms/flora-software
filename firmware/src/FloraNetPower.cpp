@@ -1,0 +1,106 @@
+#include <FloraNetPower.h>
+
+void FloraNetPower::handleSleep()
+{
+    xEventGroupSetBits(xEventGroup, EVENTBIT_PREP_SLEEP);
+    EventBits_t eb = xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY, false, true, portMAX_DELAY);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
+    // if web and proto tasks are no longer ready to sleep
+    if((eb & (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY)) != (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY))
+    {
+        // clear lora sleep, and deal with rx isr
+        if (digitalRead(LORA_IRQ) == HIGH)
+        {
+            xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+        } else {
+            radio.setDio1Action(RxISR);
+        }
+        return;
+    }
+    // make sure we haven't receieved a message after we removed the rx isr
+    if(digitalRead(LORA_IRQ) == HIGH)
+    {  
+        // Restart the lora and proto tasks
+        xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
+        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+        return;
+    }
+    // or that the button has been pressed
+    if((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_REQUESTED) == EVENTBIT_WEB_REQUESTED)
+    {
+        return;
+    }
+
+    // if we are still good to sleep,
+
+    // remove buttonISR, set wakeup sources and go to sleep
+    // Remove Interupt from button
+    DETACH_BUTTONISR();
+    
+    // setup LORA_IRQ wakeup
+    pinMode(LORA_IRQ, INPUT);
+    gpio_wakeup_enable((gpio_num_t)LORA_IRQ, GPIO_INTR_HIGH_LEVEL);     // wake from semtech on high level
+    esp_sleep_enable_gpio_wakeup();
+    // setup USER_BTN
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON, 0);
+    rtc_gpio_pulldown_dis((gpio_num_t)USER_BUTTON);
+    rtc_gpio_pullup_en((gpio_num_t)USER_BUTTON);
+
+    // GO TO SLEEP
+    DBG_PRINTLN("GOING TO SLEEP!");
+
+    esp_light_sleep_start();
+    
+    DBG_PRINTLN("Woke up!");
+    
+    // if caused by a button press
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0)
+    {
+        // wait for user button to go high
+        do
+        {
+            vTaskDelay(pdMS_TO_TICKS(100));
+        } while (!digitalRead(USER_BUTTON));
+
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);    // prevent immediate sleep on return.
+        xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);        // let the web server know its ready to go
+        // check if we've received a lora message
+        if (digitalRead(LORA_IRQ) == HIGH)
+        {
+            xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+        }
+        else
+        {
+            radio.setDio1Action(RxISR); // Re-attach interupt
+        }
+    } else {        // if caused by lora irq
+        xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);      // prevent sleep routine call on return
+        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+        ATTACH_BUTTONISR(); 
+    }
+    return;
+    
+}
+void FloraNetPower::run()
+{
+    while (true)
+    {
+        xEventGroupWaitBits(
+            xEventGroup,
+            (EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_WEB_SLEEP_READY),
+            false,
+            true,
+            portMAX_DELAY);
+        handleSleep();
+        YIELD();
+    }
+}
+
+void powerTask( void * pvParameter )
+{
+    FloraNetPower *handler = static_cast<FloraNetPower *>(pvParameter);
+    handler->run(); // run the handler. should never return
+    delete handler; // if it does, delete it and the task?
+    vTaskDelete(NULL);
+    return;
+}

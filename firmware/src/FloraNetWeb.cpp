@@ -1,17 +1,171 @@
 #include <FloraNetWeb.h>
+// private
+void FloraNetWeb::initWebServer() // Initializes web server stuff
+{
+  WiFi.mode(WIFI_MODE_AP);
+  WiFi.enableAP(true);
+  // Set up Wi-Fi (AP mode)
+  DBG_PRINTLN("Setting up Access Point with SSID: ");
+  DBG_PRINTLN(WIFI_SSID);
+  if (WiFi.softAP(WIFI_SSID))
+  {
+    DBG_PRINTLN("Access Point setup complete");
+  }
+  else
+  {
+    DBG_PRINTLN("Failed to set up Access Point");
+    return;
+  }
 
-// init globals
-AsyncWebServer server(80);
-AsyncWebSocket ws(WEBSOCKET_ENDPOINT); // websocket
-uint8_t currentId = 0;
+  DBG_PRINTLN("Access Point IP address: ");
+  DBG_PRINTLN(WiFi.softAPIP());
 
-/// @brief Web socket event handler
-/// @param server the web socket
-/// @param client the client
-/// @param type the type of event
-/// @param arg any argumetns passed in
-/// @param data the data included in the message
-/// @param len the length of the data buffer
+  // init sd card
+
+  sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+
+  if (!SD.begin(SD_CS))
+  {
+    DBG_PRINTLN("Failed to initialize the SD card.");
+  }
+
+  server.begin();
+  DBG_PRINTLN("Web server started!");
+
+  server.serveStatic("/", SD, "/").setDefaultFile("index.html");
+  server.addHandler(&ws);
+
+  // start DNS
+
+  if (!MDNS.begin(WEBSERVER_DNS))
+  {
+    DBG_PRINTLN("Error setting up MDNS responder!");
+  }
+
+  MDNS.addService("http", "tcp", 80);
+
+  // add websocket service
+  ws.onEvent(onWsEvent);
+  return;
+}
+
+void FloraNetWeb::runServer()
+{
+  // initialize the server
+  initWebServer();
+  bool timeout = false;
+
+// for power saving
+#ifdef POWER_SAVER
+#define RESET_TIMER() xTimerReset(xWebTimer, pdMS_TO_TICKS(1000)); timeout = false
+  TimerHandle_t xWebTimer = xTimerCreate(
+      "Web",
+      pdMS_TO_TICKS(WEB_TIMEOUT),
+      false,
+      (void *)1,
+      WebTimeoutCallback);
+  xTimerStart(xWebTimer, pdMS_TO_TICKS(1000));
+#else 
+#define RESET_TIMER()
+#endif
+  
+
+  // make sure the webserver wont timeout right away
+  xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
+
+  while (!timeout)
+  {
+    // wait for an action
+    EventBits_t eventBits = xEventGroupWaitBits(
+                                  xEventGroup, 
+                                  EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION | EVENTBIT_WEB_TIMEOUT,
+                                  false, 
+                                  false, 
+                                  portMAX_DELAY);
+
+    // if timeout, return
+    if ((eventBits & EVENTBIT_WEB_TIMEOUT))
+    {
+      xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
+      timeout = true;
+    }
+
+    // if websocket action, just clear the flag and reset the timer
+    if ((eventBits & EVENTBIT_SOCKET_ACTION))
+    {
+      xEventGroupClearBits(xEventGroup, EVENTBIT_SOCKET_ACTION);
+      
+      RESET_TIMER();
+    }
+
+    // if a message is ready
+    if ((eventBits & EVENTBIT_WEB_TX_READY))
+    {
+      // read in the message from the protocol task
+      Message *msg;
+      QUEUE_RECEIVE(qToWeb, msg)
+      msg->appendHistory();
+      // convert to json string and send over the web socket
+      ws.textAll(msg->toSerialJson());
+
+      RESET_TIMER();
+    }
+
+
+    // if there are no more messages in the queue, clear the event bit
+    if (uxQueueMessagesWaiting(qToWeb) == 0)
+    {
+      xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
+    }
+
+    YIELD();  // for wdt
+  }
+
+  #ifdef POWER_SAVER
+  // delete the timer & return upon timeout
+  xTimerDelete(xWebTimer, pdMS_TO_TICKS(1000));
+  #endif
+  return;
+}
+
+void cleanWebServer() {
+  // upon timeout, clean up servers and attach button interrupt
+  MDNS.end();
+  server.end();
+  SD.end();
+  sdSPI.end();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);
+  ATTACH_BUTTONISR();
+}
+
+// public
+void FloraNetWeb::run() {
+  #ifdef POWER_SAVER
+  ATTACH_BUTTONISR();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);
+  xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+  #else
+  xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
+  #endif
+  while (true) {
+    // wait for the web server to be requested
+    xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_REQUESTED, false, false, portMAX_DELAY);
+
+    // upon request, clear the sleep-ready and request bits
+    xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED | EVENTBIT_WEB_SLEEP_READY);
+    
+    // run the server
+    runServer();
+
+    // upon timeout, let power manager know its ready to sleep and yield the processor
+    xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+    YIELD();
+  }
+}
+
+// external
 void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
                AwsEventType type, void *arg, uint8_t *data, size_t len) {
   if (type == WS_EVT_CONNECT) {
@@ -22,82 +176,37 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     ws.textAll(data, len);
     Message *rx_message = new Message(data, currentId++);
 
+    rx_message->appendHistory();
     DBG_PRINT("WS Data received: ");
 
-    // Write Message to SD card
-    rx_message->appendHistory("/data/history.csv");
-
+    #ifdef DEBUG
     for (int i = 0; i < len; i++) {
       DBG_PRINT((char)data[i]);
     }
+    #endif
 
     DBG_PRINTLN();
 
-    xQueueSend(     // send the message pointer to the lora task
-        qToMesh,
-        (void *)&rx_message,
-        (TickType_t)0);
-    xEventGroupSetBits(xAvalinkEventGroup, EVENTBIT_LORA_Q);
+    xQueueSend(     // send the message pointer to the protocol task
+        qFromWeb,
+        &rx_message,
+        MAX_TICKS_TO_WAIT);
+
+    // let the protocol task know a message is ready and the web task know something happened on the socket
+    xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE | EVENTBIT_SOCKET_ACTION);
     return;
   }
 }
 
-/// @brief Web task function
-void webTask(void *) {
-  bApIsUp = true;
-  initWebServer(); // initialize the hardware
-  while (true) {
-    xEventGroupWaitBits(xAvalinkEventGroup, EVENTBIT_WEB_READY, pdFALSE, pdFALSE, portMAX_DELAY);
-    if (uxQueueMessagesWaiting(qToWeb) == 0) 
-    {
-      xEventGroupClearBits(xAvalinkEventGroup, EVENTBIT_WEB_READY);
-    }
-    
-    Message *rx_msg; // create pointer to message object
-
-    xQueueReceive(qToWeb, &rx_msg, 100); // read in mesage pointer from queue
-
-    String data = rx_msg->toSerialJson(); // create serialized json object
-
-    ws.textAll(data); // send the data over the web socket to all the clients
-
-    // write to sd card
-    rx_msg->appendHistory(HISTORY_FILENAME);
-  };
-}
-WebError initWebServer() // Initializes web server stuff
+void WebTimeoutCallback ( TimerHandle_t xTimer )
 {
+  xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
+}
 
-  // Set up Wi-Fi (AP mode)
-  DBG_PRINTLN("Setting up Access Point with SSID: ");
-  DBG_PRINTLN(WIFI_SSID);
-  if (WiFi.softAP(WIFI_SSID)) {
-    DBG_PRINTLN("Access Point setup complete");
-  } else {
-    DBG_PRINTLN("Failed to set up Access Point");
-    return WEB_ERR_WIFI_AP;
-  }
-
-  DBG_PRINTLN("Access Point IP address: ");
-  DBG_PRINTLN(WiFi.softAPIP());
-
-  server.begin();
-  DBG_PRINTLN("Web server started!");
-
-  server.serveStatic("/", SD, "/").setDefaultFile("index.html");
-  server.addHandler(&ws);
-
-  // start DNS
-
-  if (!MDNS.begin(WEBSERVER_DNS)) {
-    DBG_PRINTLN("Error setting up MDNS responder!");
-  }
-
-  MDNS.addService("http", "tcp", 80);
-
-  // add websocket service
-  ws.onEvent(onWsEvent);
-
-  currentId = 0;
-  return WEB_ERR_NONE;
+void webTask(void * pvParameter) {
+  FloraNetWeb *handler = static_cast<FloraNetWeb *>(pvParameter);
+  handler->run(); // run the handler. should never return
+  delete handler; // if it does, delete it and the task?
+  vTaskDelete(NULL);
+  return;
 }

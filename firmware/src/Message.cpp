@@ -16,7 +16,6 @@ Message::Message(uint8_t *bytes)
     packetId = *bytes++;
     ttl = *bytes++;
     payload = String((char *)bytes);
-    isRetry = false;
 }
 
 Message::Message(uint8_t *serialJson, uint8_t id)
@@ -30,11 +29,9 @@ Message::Message(uint8_t *serialJson, uint8_t id)
 
     senderId = json["NodeID"];
 
-    packetId = id; // set the packet id to the current id
+    packetId = id;
 
     ttl = MAX_LORA_TTL;
-
-    isRetry = false;
 
     if (json["SOS"] == 0) // if it's not an SOS message
     {
@@ -77,12 +74,11 @@ uint16_t Message::toLoraPacket(uint8_t *buf)
     {
         buf[len++] = *cstr++;
     }
-    len++;
     buf[len] = '\0'; // get total packet length
     return len;
 }
 
-void Message::appendHistory(String fileName)
+void Message::appendHistory()
 {
     uint8_t type;
     if (dest == 0x00)
@@ -96,7 +92,7 @@ void Message::appendHistory(String fileName)
     String combinedString = "\"" + payload + "\"" + "," + String(senderId) + "," +
                             String(type); // "payload",nodeID,SOS
 
-    File file = SD.open(fileName, FILE_APPEND);
+    File file = SD.open(HISTORY_FILENAME, FILE_APPEND);
 
     if (!file)
     {
