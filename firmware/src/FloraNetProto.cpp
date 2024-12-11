@@ -27,14 +27,16 @@ void FloraNetProto::handleEvents()
             xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_TX_READY);
         }
     } while (!readyToSleep());
-    
+    // ready to sleep
+    xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
+    YIELD();        // yield to power task
 }
 
 void FloraNetProto::handleTx(Message * msg, LogList * log)
 {
     log->update(msg);
     long delay = random(1, LORA_TX_WAIT_INTERVAL_MAX) * (maxTimeOnAir);
-    long retryDelay = random(RETRY_INTERVAL) * maxTimeOnAir;
+    long retryDelay = random(RETRY_INTERVAL) * 1000;
     // wait for the delay
     vTaskDelay(pdMS_TO_TICKS(delay));
 
@@ -161,11 +163,14 @@ bool FloraNetProto::readyToSleep()
     {
         return false;
     } 
-
     
-
+    long timeout = 0;
     // wait for any messages needing to be acknowledged or retries that might be expiring
-    long timeout = maxTimeOnAir * LORA_TX_WAIT_INTERVAL_MAX * 3;
+    #ifdef TEST_SLEEP
+    timeout = maxTimeOnAir * LORA_TX_WAIT_INTERVAL_MAX;
+    #else
+    timeout = RETRY_INTERVAL_MAX * 1000;
+    #endif
     EventBits_t eventbits = xEventGroupWaitBits(
         xEventGroup,
         (EVENTBIT_LORA_RX_DONE | EVENTBIT_WEB_RX_DONE | EVENTBIT_RETRY_READY),
@@ -176,22 +181,19 @@ bool FloraNetProto::readyToSleep()
     // if timeout
     if ((eventbits & (EVENTBIT_LORA_RX_DONE | EVENTBIT_WEB_RX_DONE | EVENTBIT_RETRY_READY)) == 0)
     {
-        // set ready to sleep
-        xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
         return true;
-    } else {
-        // not ready to sleep
-        return false;
-    }
+    } 
+
+    return false;
 }
 
 //public
 void FloraNetProto::run()
 {
-    // make sure we don't go to sleep
     xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
+    init();
     #ifdef POWER_SAVER
-    xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);    // ok ready to sleep again
+    xEventGroupSetBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);    // ready to sleep
     #endif
     while (true)
     {

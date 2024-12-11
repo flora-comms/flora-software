@@ -21,6 +21,11 @@ FloraNet utilities. All necessary include files to run FloraNet.
 #define CRITICAL_SECTION(args...) args;
 #endif
 
+// attaches the buttonISR to the user button
+#define ATTACH_BUTTONISR() pinMode(USER_BUTTON, INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(USER_BUTTON), buttonISR, LOW)
+// detaches the buttonISR from the user button
+#define DETACH_BUTTONISR() detachInterrupt(digitalPinToInterrupt(USER_BUTTON))
+
 // ensures that only valid items are read in from the queue
 #define QUEUE_RECEIVE(queue, buf)   if(!xQueueReceive(queue, &buf, MAX_TICKS_TO_WAIT)) { return; }
 

@@ -23,19 +23,20 @@
 
 // Event Group
 
-#define EVENTBIT_LORA_TX_READY 0x1          // 000000000001
-#define EVENTBIT_LORA_TX_DONE 0x2           // 000000000010
-#define EVENTBIT_LORA_RX_READY 0x4          // 000000000100
-#define EVENTBIT_LORA_RX_DONE 0x8           // 000000001000
-#define EVENTBIT_WEB_TX_READY  0x10         // 000000010000
-#define EVENTBIT_WEB_RX_DONE 0x20           // 000000100000
-#define EVENTBIT_LORA_SLEEP_READY 0x40      // 000001000000
-#define EVENTBIT_WEB_SLEEP_READY 0x80       // 000010000000
-#define EVENTBIT_PROTO_SLEEP_READY  0x100   // 000100000000
-#define EVENTBIT_PREP_SLEEP         0x200   // 001000000000
-#define EVENTBIT_WEB_REQUESTED      0x400   // 010000000000
-#define EVENTBIT_SOCKET_ACTION      0x800   // 100000000000
-#define EVENTBIT_RETRY_READY        0x1000  //1000000000000
+#define EVENTBIT_LORA_TX_READY      0x1     // 00000000000010
+#define EVENTBIT_LORA_TX_DONE       0x2     // 00000000000100
+#define EVENTBIT_LORA_RX_READY      0x4     // 00000000001000
+#define EVENTBIT_LORA_RX_DONE       0x8     // 00000000010000
+#define EVENTBIT_WEB_TX_READY       0x10    // 00000000100000
+#define EVENTBIT_WEB_RX_DONE        0x20    // 00000001000000
+#define EVENTBIT_LORA_SLEEP_READY   0x40    // 00000010000000
+#define EVENTBIT_WEB_SLEEP_READY    0x80    // 00000100000000
+#define EVENTBIT_PROTO_SLEEP_READY  0x100   // 00001000000000
+#define EVENTBIT_PREP_SLEEP         0x200   // 00010000000000
+#define EVENTBIT_WEB_REQUESTED      0x400   // 00100000000000
+#define EVENTBIT_SOCKET_ACTION      0x800   // 01000000000000
+#define EVENTBIT_RETRY_READY        0x1000  // 01000000000000
+#define EVENTBIT_WEB_TIMEOUT        0x2000  // 10000000000000
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
@@ -163,11 +164,18 @@
 // p2p layer config
 #define MAX_LORA_TTL 4                  // maximum TTL hop count
 #define ACKNOWLEDGE_WINDOW_SIZE 16      // number of messages that we'll keep track of in the log list
-#define RETRY_INTERVAL  30000, 60000    // between 30s and 1 min
+#define RETRY_INTERVAL_MAX  60          // maximum number of seconds to wait for a retry
+#define RETRY_INTERVAL_MIN  30          // minimum number of seconds to wait for a retry
+#define RETRY_INTERVAL  30, 60  // between 30s and 1 min
 
 // WEB CONFIG
-#define HISTORY_FILENAME "/data/history.csv"
+#define HISTORY_FILENAME    "/data/history.csv"
 
+#ifdef TEST_SLEEP
+#define WEB_TIMEOUT         30000       // the web timeout in ms
+#else
+#define WEB_TIMEOUT         300000      // the web timeout in ms (default 5 min)
+#endif
 // GLOBAL VARIABLES
 
 

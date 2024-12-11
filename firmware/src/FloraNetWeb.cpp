@@ -2,7 +2,8 @@
 // private
 void FloraNetWeb::initWebServer() // Initializes web server stuff
 {
-
+  WiFi.mode(WIFI_MODE_AP);
+  WiFi.enableAP(true);
   // Set up Wi-Fi (AP mode)
   DBG_PRINTLN("Setting up Access Point with SSID: ");
   DBG_PRINTLN(WIFI_SSID);
@@ -50,26 +51,55 @@ void FloraNetWeb::initWebServer() // Initializes web server stuff
 
 void FloraNetWeb::runServer()
 {
-  while (true)
+  // initialize the server
+  initWebServer();
+  bool timeout = false;
+
+// for power saving
+#ifdef POWER_SAVER
+#define RESET_TIMER() xTimerReset(xWebTimer, pdMS_TO_TICKS(1000)); timeout = false
+  TimerHandle_t xWebTimer = xTimerCreate(
+      "Web",
+      pdMS_TO_TICKS(WEB_TIMEOUT),
+      false,
+      (void *)1,
+      WebTimeoutCallback);
+  xTimerStart(xWebTimer, pdMS_TO_TICKS(1000));
+#else 
+#define RESET_TIMER()
+#endif
+  
+
+  // make sure the webserver wont timeout right away
+  xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
+
+  while (!timeout)
   {
-    // wait for an action or 5 min timeout
-    EventBits_t eventBits = xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION, false, false, pdMS_TO_TICKS(300000));
+    // wait for an action
+    EventBits_t eventBits = xEventGroupWaitBits(
+                                  xEventGroup, 
+                                  EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION | EVENTBIT_WEB_TIMEOUT,
+                                  false, 
+                                  false, 
+                                  portMAX_DELAY);
 
     // if timeout, return
-    if ((eventBits & (EVENTBIT_WEB_TX_READY | EVENTBIT_SOCKET_ACTION)) == 0)
+    if ((eventBits & EVENTBIT_WEB_TIMEOUT))
     {
-      return;
+      xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
+      timeout = true;
     }
 
-    // if websocket action, just clear the flag
-    if ((eventBits & EVENTBIT_SOCKET_ACTION) != 0)
+    // if websocket action, just clear the flag and reset the timer
+    if ((eventBits & EVENTBIT_SOCKET_ACTION))
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_SOCKET_ACTION);
-      YIELD();
+      
+      RESET_TIMER();
     }
 
     // if a message is ready
-    if ((eventBits & EVENTBIT_WEB_TX_READY) == EVENTBIT_WEB_TX_READY)
+    if ((eventBits & EVENTBIT_WEB_TX_READY))
     {
       // read in the message from the protocol task
       Message *msg;
@@ -77,37 +107,61 @@ void FloraNetWeb::runServer()
       msg->appendHistory();
       // convert to json string and send over the web socket
       ws.textAll(msg->toSerialJson());
+
+      RESET_TIMER();
     }
 
+
+    // if there are no more messages in the queue, clear the event bit
     if (uxQueueMessagesWaiting(qToWeb) == 0)
     {
       xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
-    } 
+    }
+
+    YIELD();  // for wdt
   }
+
+  #ifdef POWER_SAVER
+  // delete the timer & return upon timeout
+  xTimerDelete(xWebTimer, pdMS_TO_TICKS(1000));
+  #endif
+  return;
+}
+
+void cleanWebServer() {
+  // upon timeout, clean up servers and attach button interrupt
+  MDNS.end();
+  server.end();
+  SD.end();
+  sdSPI.end();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);
+  ATTACH_BUTTONISR();
 }
 
 // public
 void FloraNetWeb::run() {
-  pinMode(USER_BUTTON, INPUT_PULLUP);
-  attachInterrupt(USER_BUTTON, buttonISR, LOW);
   #ifdef POWER_SAVER
+  ATTACH_BUTTONISR();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+  #else
+  xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
   #endif
   while (true) {
+    // wait for the web server to be requested
     xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_REQUESTED, false, false, portMAX_DELAY);
+
+    // upon request, clear the sleep-ready and request bits
     xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED | EVENTBIT_WEB_SLEEP_READY);
-    initWebServer();
+    
+    // run the server
     runServer();
-    // upon timeout, clean up servers and attach button interrupt
-    MDNS.end();
-    server.end();
-    SD.end();
-    sdSPI.end();
-    WiFi.softAPdisconnect( true );
-    WiFi.mode(WIFI_OFF);
-    pinMode(USER_BUTTON, INPUT_PULLUP);
-    attachInterrupt(USER_BUTTON, buttonISR, LOW);
+
+    // upon timeout, let power manager know its ready to sleep and yield the processor
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+    YIELD();
   }
 }
 
@@ -142,6 +196,11 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE | EVENTBIT_SOCKET_ACTION);
     return;
   }
+}
+
+void WebTimeoutCallback ( TimerHandle_t xTimer )
+{
+  xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TIMEOUT);
 }
 
 void webTask(void * pvParameter) {

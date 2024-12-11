@@ -25,6 +25,9 @@ private:
     /// @brief Runs the web server until timeout
     void runServer();
 
+    /// @brief turns off server, mDNS, ws, and WiFi AP
+    void cleanWebServer();
+
 public:
     FloraNetWeb() {};
     /// @brief Runs the web service handler.
@@ -44,4 +47,7 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
 /// @brief Web task function
 extern "C" void webTask(void * pvParameter);
 
+/// @brief Callback for the web timeout timer.
+/// @param xTimer The timer calling the function.
+extern "C" void WebTimeoutCallback( TimerHandle_t xTimer );
 #endif

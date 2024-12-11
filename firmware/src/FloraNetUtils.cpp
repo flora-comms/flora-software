@@ -77,7 +77,7 @@ void TxISR(void){
 /// @brief User button press ISR
 void buttonISR(void)
 {
-    detachInterrupt(USER_BUTTON);   // remove the interrupt
+    DETACH_BUTTONISR();   // remove the interrupt
 
     BaseType_t xHigherPriorityTaskWoken, xResult;
 
