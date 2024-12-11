@@ -22,7 +22,7 @@ FloraNet utilities. All necessary include files to run FloraNet.
 #endif
 
 // attaches the buttonISR to the user button
-#define ATTACH_BUTTONISR() pinMode(USER_BUTTON, INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(USER_BUTTON), buttonISR, LOW)
+#define ATTACH_BUTTONISR() pinMode(USER_BUTTON, INPUT_PULLUP); vTaskDelay(3); attachInterrupt(digitalPinToInterrupt(USER_BUTTON), buttonISR, LOW)
 // detaches the buttonISR from the user button
 #define DETACH_BUTTONISR() detachInterrupt(digitalPinToInterrupt(USER_BUTTON))
 

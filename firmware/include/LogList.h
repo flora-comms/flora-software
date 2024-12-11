@@ -25,6 +25,7 @@ public:
     bool ack;
     LogEntry *next;
     LogEntry *prev;
+    TimerHandle_t retryTimer;
     /// @brief Constructs a LogEntry from a Message object
     /// @param message The Message to construct the log entry from
     LogEntry(Message *message);

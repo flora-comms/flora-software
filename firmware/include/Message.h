@@ -10,6 +10,7 @@ public:
     uint8_t ttl;      // the message time to live
     uint8_t dest;     // the Node ID of the destination
 
+
     /// @brief Default Message constructor
     Message();
     

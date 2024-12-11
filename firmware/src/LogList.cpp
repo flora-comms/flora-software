@@ -21,6 +21,7 @@ LogEntry::LogEntry(Message *message)
     ack = false;
     next = nullptr;
     prev = nullptr;
+    retryTimer = NULL;
 }
 
 LogEntry::~LogEntry()
@@ -33,8 +34,18 @@ bool LogList::checkId(uint8_t packetId)
     LogEntry *pCheckEntry = root; // start at the beginning
     while (pCheckEntry != nullptr)
     { // while the entry is valid
-        if (packetId == pCheckEntry->id)
-        { // if the packet ids match
+        uint8_t id = pCheckEntry->id;
+        bool ack = pCheckEntry->ack;
+        if ((packetId == id) & ack) // if the packet ids match and the message has already been acknowledged
+        {
+            return true;
+        }
+
+        if ((packetId == id) & !ack) { // if the packet ids match but the message hasn't been acknowledged
+            // delete the retry timer and acknowledge
+            TimerHandle_t timer = pCheckEntry->retryTimer;
+            xTimerStop(timer, MAX_TICKS_TO_WAIT);
+            xTimerDelete(timer, MAX_TICKS_TO_WAIT);
             pCheckEntry->ack = true;
             return true;
         }

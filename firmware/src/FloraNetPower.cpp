@@ -4,11 +4,11 @@ void FloraNetPower::handleSleep()
 {
     xEventGroupSetBits(xEventGroup, EVENTBIT_PREP_SLEEP);
     EventBits_t eb = xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY, false, true, portMAX_DELAY);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
     // if web and proto tasks are no longer ready to sleep
     if((eb & (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY)) != (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY))
     {
         // clear lora sleep, and deal with rx isr
-        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
         if (digitalRead(LORA_IRQ) == HIGH)
         {
             xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
@@ -21,7 +21,7 @@ void FloraNetPower::handleSleep()
     if(digitalRead(LORA_IRQ) == HIGH)
     {  
         // Restart the lora and proto tasks
-        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY);
+        xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);
         xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
         return;
     }
@@ -36,38 +36,34 @@ void FloraNetPower::handleSleep()
     // remove buttonISR, set wakeup sources and go to sleep
     // Remove Interupt from button
     DETACH_BUTTONISR();
-
-    // suspend all tasks
-    vTaskSuspend(_tskLora);
-    vTaskSuspend(_tskProto);
-    vTaskSuspend(_tskWeb);
     
-    // setup LORA_IRQ
+    // setup LORA_IRQ wakeup
     pinMode(LORA_IRQ, INPUT);
-    gpio_wakeup_enable((gpio_num_t)LORA_IRQ, GPIO_INTR_HIGH_LEVEL); // wake from semtech using GPIO
+    gpio_wakeup_enable((gpio_num_t)LORA_IRQ, GPIO_INTR_HIGH_LEVEL);     // wake from semtech on high level
     esp_sleep_enable_gpio_wakeup();
     // setup USER_BTN
-    rtc_gpio_pullup_en((gpio_num_t)USER_BUTTON);
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON, 0);
     rtc_gpio_pulldown_dis((gpio_num_t)USER_BUTTON);
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON, 0); // wake from button using EXT0
+    rtc_gpio_pullup_en((gpio_num_t)USER_BUTTON);
 
     // GO TO SLEEP
     DBG_PRINTLN("GOING TO SLEEP!");
 
-
     esp_light_sleep_start();
     
     DBG_PRINTLN("Woke up!");
- 
-    // determine wakeup cause
-    esp_sleep_wakeup_cause_t wakeCause = esp_sleep_get_wakeup_cause();
     
-    // if caused by button
-    if (wakeCause = ESP_SLEEP_WAKEUP_EXT0) // Button wakeup
+    // if caused by a button press
+    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0)
     {
-        xEventGroupClearBits(xEventGroup, 
-        EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_LORA_SLEEP_READY);
-        xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
+        // wait for user button to go high
+        do
+        {
+            vTaskDelay(pdMS_TO_TICKS(100));
+        } while (!digitalRead(USER_BUTTON));
+
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);    // prevent immediate sleep on return.
+        xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);        // let the web server know its ready to go
         // check if we've received a lora message
         if (digitalRead(LORA_IRQ) == HIGH)
         {
@@ -77,29 +73,13 @@ void FloraNetPower::handleSleep()
         {
             radio.setDio1Action(RxISR); // Re-attach interupt
         }
-        // resume tasks
-        CRITICAL_SECTION(
-            vTaskResume(_tskProto);
-            vTaskResume(_tskWeb);
-            vTaskResume(_tskLora))
-        taskYIELD();
-        return;
+    } else {        // if caused by lora irq
+        xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);      // prevent sleep routine call on return
+        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
+        ATTACH_BUTTONISR(); 
     }
-    WiFi.mode(WIFI_OFF); // keep power low
-    // otherwise
-    xEventGroupClearBits(       // clear proto and lora sleep event bits
-        xEventGroup,
-        (EVENTBIT_LORA_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY));
-    xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);    // let lora know there's a new message
-    // re attach user buttonISR
-    ATTACH_BUTTONISR();
-    // resume all tasks
-    CRITICAL_SECTION(
-        vTaskResume(_tskLora);
-        vTaskResume(_tskProto);
-        vTaskResume(_tskWeb);
-    )
     return;
+    
 }
 void FloraNetPower::run()
 {

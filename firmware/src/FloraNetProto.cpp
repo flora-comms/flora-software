@@ -41,20 +41,24 @@ void FloraNetProto::handleTx(Message * msg, LogList * log)
     vTaskDelay(pdMS_TO_TICKS(delay));
 
 
-    // create and start retry timer
-    RetryTimerID *id = new RetryTimerID(log->root);
-    TimerHandle_t timer = xTimerCreate(
+    // create the retry timer
+    RetryTimer *retryTimer = new RetryTimer(log->root);
+    TimerHandle_t timerHandle = xTimerCreate(
         "",
         pdMS_TO_TICKS(retryDelay),
         false,
-        id,
+        retryTimer,
         RetryTimerCallback
     );
 
-    // send to mesh
+    // associate the timer handle with the log entry contained by the retry timer object
+    retryTimer->entry->retryTimer = timerHandle;
+
+    // send to mesh and start the retry timer
+    // the log entry will delete the retry timer if the message is acknowledged before the callback fires
     xQueueSend(qToMesh, &msg, MAX_TICKS_TO_WAIT);
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_TX_READY);
-    xTimerStart(timer, MAX_TICKS_TO_WAIT);
+    xTimerStart(timerHandle, MAX_TICKS_TO_WAIT);
 }
 
 void FloraNetProto::handleLora()
@@ -165,7 +169,7 @@ bool FloraNetProto::readyToSleep()
     } 
     
     long timeout = 0;
-    // wait for any messages needing to be acknowledged or retries that might be expiring
+    // wait for any retries that might be expiring
     #ifdef TEST_SLEEP
     timeout = maxTimeOnAir * LORA_TX_WAIT_INTERVAL_MAX;
     #else
