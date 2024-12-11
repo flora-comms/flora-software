@@ -1,14 +1,14 @@
 #include <FloraNetPower.h>
+#include <freertos/xtensa_timer.h>
 
 void FloraNetPower::handleSleep()
 {
     xEventGroupSetBits(xEventGroup, EVENTBIT_PREP_SLEEP);
     EventBits_t eb = xEventGroupWaitBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY, false, true, portMAX_DELAY);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
     // if web and proto tasks are no longer ready to sleep
-    if((eb & (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY)) != (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY))
+    if(!(eb & (EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY)))
     {
-        // clear lora sleep, and deal with rx isr
-        xEventGroupClearBits(xEventGroup, EVENTBIT_LORA_SLEEP_READY);
         if (digitalRead(LORA_IRQ) == HIGH)
         {
             xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
@@ -26,8 +26,9 @@ void FloraNetPower::handleSleep()
         return;
     }
     // or that the button has been pressed
-    if((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_REQUESTED) == EVENTBIT_WEB_REQUESTED)
+    if((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_REQUESTED))
     {
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
         return;
     }
 
@@ -61,12 +62,12 @@ void FloraNetPower::handleSleep()
  
     // determine wakeup cause
     esp_sleep_wakeup_cause_t wakeCause = esp_sleep_get_wakeup_cause();
-    
+
     // if caused by button
-    if (wakeCause = ESP_SLEEP_WAKEUP_EXT0) // Button wakeup
+    if (wakeCause == ESP_SLEEP_WAKEUP_EXT0) // Button wakeup
     {
         xEventGroupClearBits(xEventGroup, 
-        EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_LORA_SLEEP_READY);
+        EVENTBIT_WEB_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY);
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
         // check if we've received a lora message
         if (digitalRead(LORA_IRQ) == HIGH)
@@ -82,14 +83,10 @@ void FloraNetPower::handleSleep()
             vTaskResume(_tskProto);
             vTaskResume(_tskWeb);
             vTaskResume(_tskLora))
-        taskYIELD();
         return;
     }
-    WiFi.mode(WIFI_OFF); // keep power low
-    // otherwise
-    xEventGroupClearBits(       // clear proto and lora sleep event bits
-        xEventGroup,
-        (EVENTBIT_LORA_SLEEP_READY | EVENTBIT_PROTO_SLEEP_READY));
+    // otherwise assume lora wakeup
+    xEventGroupClearBits( xEventGroup, EVENTBIT_PROTO_SLEEP_READY);               // clear proto and lora sleep event bits
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);    // let lora know there's a new message
     // re attach user buttonISR
     ATTACH_BUTTONISR();

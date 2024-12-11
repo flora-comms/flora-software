@@ -40,7 +40,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Main" // WiFi network name
+#define WIFI_SSID "FloraNet Test" // WiFi network name
 
 /*
 
@@ -51,10 +51,12 @@ DEBUGGING
 Comment out to remove debug functionality
 
 */
-#define DEBUG
+//#define DEBUG
 //#define USE_CS
-//#define POWER_SAVER
+#define POWER_SAVER
 //#define TEST_SLEEP
+//#define POWER_DRAW_TEST_MASTER
+#define POWER_DRAW_TEST_SLAVE
 /*
 
 =================================

@@ -19,7 +19,6 @@ void FloraNet::run() {
     TaskHandle_t tskPower;
 
 
-
     xTaskCreatePinnedToCore(loraTask, "Lora", STACK_SIZE, _loraHandler, TASK_PRIORITY_LORA, &tskLora, 0);
     xTaskCreatePinnedToCore(webTask, "Web", STACK_SIZE, _webHandler, TASK_PRIORITY_WEB, &tskWeb, 0);
     xTaskCreatePinnedToCore(protoTask, "Proto", STACK_SIZE, _protoHandler, TASK_PRIORITY_PROTO, &tskProto, 0);

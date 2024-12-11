@@ -14,6 +14,7 @@ AVAlink web server interface
 #define AVALINK_WEB_H
 
 #include <FloraNetUtils.h>
+#include <esp_wifi.h>
 
 // handles the web server
 class FloraNetWeb {

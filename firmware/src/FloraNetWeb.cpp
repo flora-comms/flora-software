@@ -2,11 +2,11 @@
 // private
 void FloraNetWeb::initWebServer() // Initializes web server stuff
 {
-  WiFi.mode(WIFI_MODE_AP);
-  WiFi.enableAP(true);
+  esp_wifi_start();
   // Set up Wi-Fi (AP mode)
   DBG_PRINTLN("Setting up Access Point with SSID: ");
   DBG_PRINTLN(WIFI_SSID);
+  WiFi.enableAP(true);
   if (WiFi.softAP(WIFI_SSID))
   {
     DBG_PRINTLN("Access Point setup complete");
@@ -134,8 +134,7 @@ void cleanWebServer() {
   server.end();
   SD.end();
   sdSPI.end();
-  WiFi.softAPdisconnect(true);
-  WiFi.mode(WIFI_OFF);
+  esp_wifi_stop();
   ATTACH_BUTTONISR();
 }
 
@@ -146,6 +145,7 @@ void FloraNetWeb::run() {
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_OFF);
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
+  xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
   #else
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);
   #endif

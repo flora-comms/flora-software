@@ -164,9 +164,9 @@
 // p2p layer config
 #define MAX_LORA_TTL 4                  // maximum TTL hop count
 #define ACKNOWLEDGE_WINDOW_SIZE 16      // number of messages that we'll keep track of in the log list
-#define RETRY_INTERVAL_MAX  60          // maximum number of seconds to wait for a retry
-#define RETRY_INTERVAL_MIN  30          // minimum number of seconds to wait for a retry
-#define RETRY_INTERVAL  30, 60  // between 30s and 1 min
+#define RETRY_INTERVAL_MAX  30          // maximum number of seconds to wait for a retry
+#define RETRY_INTERVAL_MIN  15          // minimum number of seconds to wait for a retry
+#define RETRY_INTERVAL  RETRY_INTERVAL_MIN, RETRY_INTERVAL_MAX  // between 30s and 1 min
 
 // WEB CONFIG
 #define HISTORY_FILENAME    "/data/history.csv"
