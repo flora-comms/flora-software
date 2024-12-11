@@ -49,12 +49,52 @@ void FloraNetPower::handleSleep()
     // GO TO SLEEP
     DBG_PRINTLN("GOING TO SLEEP!");
 
+    #ifdef FLASH_ON_NEW_MESSAGE
+
+    bool blinkLed = false;
+
+    // if theres a new message, we need to blink the led until the web server is activated.
+    if (xEventGroupGetBits(xEventGroup) & EVENTBIT_NEW_MESSAGE)
+    {
+        blinkLed = true;
+
+        // setup the gpio to drive the led
+        pinMode(NEW_MESSAGE_LED, OUTPUT);
+        digitalWrite(NEW_MESSAGE_LED, LOW);
+
+        // setup timer wakeup
+        esp_sleep_enable_timer_wakeup(LED_BLINK_PERIOD_US);
+    }
+
+    esp_sleep_wakeup_cause_t wakeCause;
+    
+    do {
+
+        esp_light_sleep_start();    // go to sleep
+
+        wakeCause = esp_sleep_get_wakeup_cause();   // get the wake cause
+
+        // if it was just the timer wakeup, we want to flash the green led and go back to sleep
+        if (wakeCause == ESP_SLEEP_WAKEUP_TIMER)
+        {
+            digitalWrite(NEW_MESSAGE_LED, HIGH);
+            vTaskDelay(pdMS_TO_TICKS(100));         // delay 100 ms
+            digitalWrite(NEW_MESSAGE_LED, LOW);
+        } else {
+            blinkLed = false;
+            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+        }
+        
+    } while (blinkLed);
+    #else
+
     esp_light_sleep_start();
+    #endif
     
     DBG_PRINTLN("Woke up!");
     
     // if caused by a button press
-    if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0)
+    if (wakeCause == ESP_SLEEP_WAKEUP_EXT0)
     {
         // wait for user button to go high
         do

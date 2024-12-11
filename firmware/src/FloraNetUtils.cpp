@@ -98,3 +98,18 @@ void buttonISR(void)
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
+
+void ledBlinker( void * pvParameter )
+{
+    long timeout = LED_BLINK_PERIOD_US / 1000;
+    pinMode(NEW_MESSAGE_LED, OUTPUT);
+    while(true)
+    {
+        digitalWrite(NEW_MESSAGE_LED, HIGH);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        digitalWrite(NEW_MESSAGE_LED, LOW);
+        vTaskDelay(pdMS_TO_TICKS(timeout));
+    }
+    
+    
+}

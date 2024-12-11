@@ -40,7 +40,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Desk" // WiFi network name
+#define WIFI_SSID "FloraNet Table" // WiFi network name
 
 /*
 
@@ -55,6 +55,7 @@ Comment out to remove debug functionality
 //#define USE_CS
 #define POWER_SAVER
 //#define TEST_SLEEP
+#define FLASH_ON_NEW_MESSAGE
 /*
 
 =================================

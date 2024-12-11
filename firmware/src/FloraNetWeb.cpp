@@ -154,8 +154,18 @@ void FloraNetWeb::run() {
     xEventGroupWaitBits(xEventGroup, EVENTBIT_WEB_REQUESTED, false, false, portMAX_DELAY);
 
     // upon request, clear the sleep-ready and request bits
-    xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED | EVENTBIT_WEB_SLEEP_READY);
+    xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_REQUESTED | EVENTBIT_WEB_SLEEP_READY | EVENTBIT_NEW_MESSAGE);
     
+    #ifdef FLASH_ON_NEW_MESSAGE
+    TaskHandle_t ledTask = xTaskGetHandle("led");
+
+    if (!(ledTask == NULL))
+    {
+      vTaskDelete(ledTask);
+    }
+
+    digitalWrite(NEW_MESSAGE_LED, LOW);
+    #endif
     // run the server
     runServer();
 

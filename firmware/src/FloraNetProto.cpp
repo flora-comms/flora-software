@@ -91,7 +91,7 @@ void FloraNetProto::handleLora()
     // if it doesn't need repeating, return
     if (!log->needsRepeating(msg)) { DBG_PRINTLN("no rpt"); return; }
 
-    // if the web app is down, write to the sd card, otherwise send to web task
+    // if the web app is down, write to the sd card and set new message event, otherwise send to web task
     if ((xEventGroupGetBits(xEventGroup) & EVENTBIT_WEB_SLEEP_READY) == EVENTBIT_WEB_SLEEP_READY)
     {
         sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
@@ -99,6 +99,7 @@ void FloraNetProto::handleLora()
         msg->appendHistory();
         SD.end();
         sdSPI.end();
+        xEventGroupSetBits(xEventGroup, EVENTBIT_NEW_MESSAGE);
     } else {
         xQueueSend(qToWeb, &msg, MAX_TICKS_TO_WAIT);
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_TX_READY);
@@ -135,7 +136,6 @@ void FloraNetProto::handleWeb()
         log = pxHistoryLogs[msg->senderId];
     }
 
-    
     // transmit to mesh
     handleTx(msg, log);
 }
@@ -168,6 +168,18 @@ bool FloraNetProto::readyToSleep()
         return false;
     } 
     
+    #ifdef FLASH_ON_NEW_MESSAGE
+    TaskHandle_t ledTask;
+    if(xEventGroupGetBits(xEventGroup) & EVENTBIT_NEW_MESSAGE)
+    {
+        // create an led blinker task if it hasn't been created already
+        ledTask = xTaskGetHandle("led");
+        if (ledTask == NULL)
+        {
+            xTaskCreatePinnedToCore(ledBlinker, "led", 2048, (void *)0, TASK_PRIORITY_PROTO, &ledTask, 1);
+        }
+    }
+    #endif
     long timeout = 0;
     // wait for any retries that might be expiring
     #ifdef TEST_SLEEP
@@ -181,10 +193,11 @@ bool FloraNetProto::readyToSleep()
         false,
         false,
         pdMS_TO_TICKS(timeout));
-
+    
     // if timeout
     if ((eventbits & (EVENTBIT_LORA_RX_DONE | EVENTBIT_WEB_RX_DONE | EVENTBIT_RETRY_READY)) == 0)
     {
+        // stop blinking the led and let the sleep routine take care of that
         return true;
     } 
 

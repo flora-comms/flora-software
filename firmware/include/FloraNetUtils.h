@@ -54,11 +54,13 @@ extern long maxTimeOnAir;
 
 // ISRs
 /// @brief LoRa RX interrupt handler
-void RxISR(void);
+extern "C" void RxISR(void);
 
 /// @brief LoRa TX interrupt handler
-void TxISR(void);
+extern "C" void TxISR(void);
 
 /// @brief User button press ISR
-void buttonISR(void);
+extern "C" void buttonISR(void);
+
+extern "C" void ledBlinker( void * pvParameter);
 #endif // FLORANET_UTILS_H
