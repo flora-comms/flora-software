@@ -163,7 +163,6 @@ void cleanWebServer() {
 // public
 void FloraNetWeb::run() {
   #ifdef POWER_SAVER
-  ATTACH_BUTTONISR();
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_OFF);
   xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);

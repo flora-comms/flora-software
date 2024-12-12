@@ -108,9 +108,9 @@ void FloraNetPower::handleSleep()
             radio.setDio1Action(RxISR); // Re-attach interupt
         }
     } else {        // if caused by lora irq
+        ATTACH_BUTTONISR();
         xEventGroupClearBits(xEventGroup, EVENTBIT_PROTO_SLEEP_READY);      // prevent sleep routine call on return
-        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);
-        ATTACH_BUTTONISR(); 
+        xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_RX_READY);            // signal lora task to deal with stuff
     }
     return;
     
