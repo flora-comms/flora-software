@@ -14,6 +14,8 @@
 #include <WiFi.h>
 #include <SPI.h>
 #include <RadioLib.h>
+#include <nvs.h>
+#include <nvs_flash.h>
 
 // Web server
 #define WEBSERVER_DNS "floranet"   // puts domain at "http://{WEBSERVER_DNS}.local"

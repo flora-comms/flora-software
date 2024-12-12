@@ -166,9 +166,35 @@ void FloraNetWeb::run() {
 
     digitalWrite(NEW_MESSAGE_LED, LOW);
     #endif
+
+#ifdef USE_NVS
+    // Initialize NVS and get the current packet id
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+      // NVS partition was truncated and needs to be erased
+      // Retry nvs_flash_init
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+    nvs_handle_t nvs_handle;
+    nvs_open("storage", NVS_READONLY, &nvs_handle);
+    nvs_get_u8(nvs_handle, "current_id", &currentId);
+    nvs_close(nvs_handle);
+    YIELD();    // for wdt
+#endif
+
     // run the server
     runServer();
 
+#ifdef USE_NVS
+    // write in the new current ID before the server sleeps
+    nvs_open("storage", NVS_READWRITE, &nvs_handle);
+    nvs_set_u8(nvs_handle, "current_id", currentId);
+    nvs_commit(nvs_handle);
+    nvs_close(nvs_handle);
+#endif
     // upon timeout, let power manager know its ready to sleep and yield the processor
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
     YIELD();
@@ -184,8 +210,11 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
     DBG_PRINTLN("Client disconnected");
   } else if (type == WS_EVT_DATA) {
     ws.textAll(data, len);
-    Message *rx_message = new Message(data, currentId++);
 
+    
+    Message *rx_message = new Message(data, currentId);
+    currentId++;
+    
     rx_message->appendHistory();
     DBG_PRINT("WS Data received: ");
 

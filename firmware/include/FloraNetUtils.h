@@ -48,7 +48,7 @@ extern QueueHandle_t qToWeb ;
 
 // for web socket event handler
 extern QueueHandle_t qFromWeb;
-extern uint8_t currentId;       // the current packet id
+extern uint8_t currentId;
 
 extern long maxTimeOnAir;
 
