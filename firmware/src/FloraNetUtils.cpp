@@ -2,7 +2,7 @@
 
 // GLOBALS 
 
-LogList* pxHistoryLogs[256] = {nullptr};
+
 // create queues
 QueueHandle_t qToMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qFromMesh = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));

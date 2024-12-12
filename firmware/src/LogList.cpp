@@ -1,4 +1,33 @@
 #include <LogList.h>
+LogList *pxHistoryLogs[256] = {nullptr};
+// Retry Timer
+LogEntry::RetryTimer::RetryTimer()
+{
+    _entry = nullptr;
+    timer = NULL;
+}
+LogEntry::RetryTimer::RetryTimer(LogEntry *entry)
+{
+    _entry = entry;
+    // create the timer handle
+    long retryDelay = random(RETRY_INTERVAL) * 1000;
+    timer = xTimerCreate(
+        "",
+        pdMS_TO_TICKS(retryDelay),
+        false,
+        entry,
+        RetryTimerCallback);
+}
+
+void RetryTimerCallback(TimerHandle_t xTimer)
+{
+    // get the timer id
+    LogEntry *entry = (LogEntry *)pvTimerGetTimerID(xTimer);
+
+    // otherwise, add it to the retry queue and notify the protocol task
+    xQueueSend(qRetries, &(entry->msg), MAX_TICKS_TO_WAIT);
+    xEventGroupSetBits(xEventGroup, EVENTBIT_RETRY_READY);
+}
 
 // Log Entry
 void LogList::removeLast()
@@ -21,12 +50,13 @@ LogEntry::LogEntry(Message *message)
     ack = false;
     next = nullptr;
     prev = nullptr;
-    retryTimer = NULL;
+    retryTimer = RetryTimer(this);
 }
 
 LogEntry::~LogEntry()
 {
     delete msg;
+    xTimerDelete(retryTimer.timer, MAX_TICKS_TO_WAIT);
 }
 
 bool LogList::checkId(uint8_t packetId)
@@ -43,9 +73,7 @@ bool LogList::checkId(uint8_t packetId)
 
         if ((packetId == id) & !ack) { // if the packet ids match but the message hasn't been acknowledged
             // delete the retry timer and acknowledge
-            TimerHandle_t timer = pCheckEntry->retryTimer;
-            xTimerStop(timer, MAX_TICKS_TO_WAIT);
-            xTimerDelete(timer, MAX_TICKS_TO_WAIT);
+            xTimerStop(pCheckEntry->retryTimer.timer, MAX_TICKS_TO_WAIT);
             pCheckEntry->ack = true;
             return true;
         }

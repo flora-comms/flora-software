@@ -13,7 +13,7 @@ AVAlink web server interface
 #ifndef AVALINK_WEB_H
 #define AVALINK_WEB_H
 
-#include <FloraNetUtils.h>
+#include <LogList.h>
 
 // handles the web server
 class FloraNetWeb {

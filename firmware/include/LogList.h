@@ -14,18 +14,33 @@ Linked list instantiation for the log lists
 #define LOGLIST_H
 #pragma once
 
-#include <Message.h>
+#include <FloraNetUtils.h>
+
+
+
+/// @brief Retry timer callback. Only called if the message is not acknowledged
+/// @param xTimer
+extern "C" void RetryTimerCallback(TimerHandle_t xTimer);
 
 /// @brief A log entry containing a message and acknowledge info
 class LogEntry
 {
 public:
+    /// @brief Retry timer for a message
+    class RetryTimer
+    {
+    public:
+        LogEntry *_entry;
+        TimerHandle_t timer;
+        RetryTimer();
+        RetryTimer(LogEntry *logEntry);
+    };
     Message *msg;
     uint8_t id;
     bool ack;
     LogEntry *next;
     LogEntry *prev;
-    TimerHandle_t retryTimer;
+    RetryTimer retryTimer;
     /// @brief Constructs a LogEntry from a Message object
     /// @param message The Message to construct the log entry from
     LogEntry(Message *message);
@@ -68,5 +83,7 @@ private:
     /// @return True if the packetId is in the list. False if the packet id does not exist
     bool checkId(uint8_t packetId);
 };
+
+extern LogList *pxHistoryLogs[256];
 
 #endif  // LOGLIST_H

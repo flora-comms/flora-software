@@ -12,7 +12,7 @@ FloraNet utilities. All necessary include files to run FloraNet.
 #ifndef FLORANET_UITLS_H
 #define FLORANET_UTILS_H
 
-#include <LogList.h>
+#include <Message.h>
 
 // critical section macro
 #if defined(USE_CS)
@@ -41,7 +41,7 @@ extern AsyncWebSocket ws;
 extern portMUX_TYPE csToken;
 // for timer task
 extern QueueHandle_t qRetries;          // the retry queue
-extern LogList* pxHistoryLogs[256];     // array of LogList pointers containing message history from each sender id.
+    // array of LogList pointers containing message history from each sender id.
 extern QueueHandle_t qToMesh ;
 extern QueueHandle_t qFromMesh ;
 extern QueueHandle_t qToWeb ;

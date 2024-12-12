@@ -40,7 +40,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Tower" // WiFi network name
+#define WIFI_SSID "FloraNet Meadow" // WiFi network name
 
 /*
 

@@ -14,7 +14,7 @@ FLORANET Layer 1 and 2 interfacing
 #define FLORANET_RADIO_H
 #pragma once
 
-#include <FloraNetUtils.h>
+#include <LogList.h>
 
 /// @brief Handles the LoRa hardware.
 class FloraNetRadio {

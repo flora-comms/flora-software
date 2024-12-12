@@ -36,29 +36,16 @@ void FloraNetProto::handleTx(Message * msg, LogList * log)
 {
     log->update(msg);
     long delay = random(1, LORA_TX_WAIT_INTERVAL_MAX) * (maxTimeOnAir);
-    long retryDelay = random(RETRY_INTERVAL) * 1000;
+    
     // wait for the delay
     vTaskDelay(pdMS_TO_TICKS(delay));
 
-
-    // create the retry timer
-    RetryTimer *retryTimer = new RetryTimer(log->root);
-    TimerHandle_t timerHandle = xTimerCreate(
-        "",
-        pdMS_TO_TICKS(retryDelay),
-        false,
-        retryTimer,
-        RetryTimerCallback
-    );
-
-    // associate the timer handle with the log entry contained by the retry timer object
-    retryTimer->entry->retryTimer = timerHandle;
 
     // send to mesh and start the retry timer
     // the log entry will delete the retry timer if the message is acknowledged before the callback fires
     xQueueSend(qToMesh, &msg, MAX_TICKS_TO_WAIT);
     xEventGroupSetBits(xEventGroup, EVENTBIT_LORA_TX_READY);
-    xTimerStart(timerHandle, MAX_TICKS_TO_WAIT);
+    xTimerStart(log->root->retryTimer.timer, MAX_TICKS_TO_WAIT);
 }
 
 void FloraNetProto::handleLora()
