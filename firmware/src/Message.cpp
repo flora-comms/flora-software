@@ -104,4 +104,14 @@ void Message::appendHistory()
         file.println(combinedString);
         file.close();
     }
+
+    #ifdef USE_NVS
+    JsonDocument json;
+    json["ID"] = currentId;
+    String newPacketId;
+    serializeJson(json, newPacketId);
+    file = SD.open(PACKET_ID_FILENAME, FILE_WRITE);
+    file.print(newPacketId);
+    file.close();
+    #endif
 }

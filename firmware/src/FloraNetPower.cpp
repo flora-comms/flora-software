@@ -49,7 +49,9 @@ void FloraNetPower::handleSleep()
     // GO TO SLEEP
     DBG_PRINTLN("GOING TO SLEEP!");
 
-    #ifdef FLASH_ON_NEW_MESSAGE
+    esp_sleep_wakeup_cause_t wakeCause;
+
+#ifdef FLASH_ON_NEW_MESSAGE
 
     bool blinkLed = false;
 
@@ -66,7 +68,7 @@ void FloraNetPower::handleSleep()
         esp_sleep_enable_timer_wakeup(LED_BLINK_PERIOD_US);
     }
 
-    esp_sleep_wakeup_cause_t wakeCause;
+    
     
     do {
 

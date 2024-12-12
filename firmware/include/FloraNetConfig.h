@@ -180,6 +180,8 @@
 
 // WEB CONFIG
 #define HISTORY_FILENAME    "/data/history.csv"
+#define PACKET_ID_FILENAME  "/current-packet.json"
+extern uint8_t currentId;
 
 #ifdef TEST_SLEEP
 #define WEB_TIMEOUT         30000       // the web timeout in ms

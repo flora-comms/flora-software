@@ -10,7 +10,7 @@ QueueHandle_t qToWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qRetries = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 QueueHandle_t qFromWeb = xQueueCreate(QUEUE_LENGTH, sizeof(Message *));
 EventGroupHandle_t xEventGroup = xEventGroupCreate();
-uint8_t currentId = 0;
+
 portMUX_TYPE csToken = portMUX_INITIALIZER_UNLOCKED;
 AsyncWebServer server(80);
 AsyncWebSocket ws(WEBSOCKET_ENDPOINT);

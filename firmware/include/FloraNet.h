@@ -8,7 +8,6 @@
 #include <FloraNetWeb.h>
 #include <FloraNetProto.h>
 #include <FloraNetPower.h>
-
 class FloraNet
 {
 private:

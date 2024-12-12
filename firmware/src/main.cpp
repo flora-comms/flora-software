@@ -22,19 +22,13 @@ void setup() {
   #ifdef DEBUG
   Serial.begin(SERIAL_BAUD);
   #endif
-  pinMode(16, OUTPUT);
-  pinMode(17, OUTPUT);
-  pinMode(18, OUTPUT);
-  for (int i = 0; i < 5; i++)
+  pinMode(NEW_MESSAGE_LED, OUTPUT);
+  for (int i = 0; i < 4; i++)
   {
-    digitalWrite(16, HIGH);
-    digitalWrite(17, HIGH);
-    digitalWrite(18, HIGH);
-    delay(500);
-    digitalWrite(16, LOW);
-    digitalWrite(17, LOW);
-    digitalWrite(18, LOW);
-    delay(500);
+    digitalWrite(NEW_MESSAGE_LED, HIGH);
+    delay(200);
+    digitalWrite(NEW_MESSAGE_LED, LOW);
+    delay(200);
   }
   FloraNet *floranet = new FloraNet();
   xEventGroupClearBits(xEventGroup, (EVENTBIT_PROTO_SLEEP_READY | EVENTBIT_WEB_SLEEP_READY));

@@ -28,6 +28,23 @@ void FloraNetWeb::initWebServer() // Initializes web server stuff
   {
     DBG_PRINTLN("Failed to initialize the SD card.");
   }
+#ifdef USE_NVS
+  if (SD.exists(PACKET_ID_FILENAME))
+  {
+    // read in packet id from sd card
+    File file = SD.open(PACKET_ID_FILENAME, FILE_READ);
+    uint8_t buf[50];
+    file.readBytesUntil('\0', buf, 50);
+    file.close();
+    JsonDocument json;
+    deserializeJson(json, buf);
+    currentId = json["ID"];
+  }
+  else
+  {
+    currentId = 0;
+  }
+#endif
 
   server.begin();
   DBG_PRINTLN("Web server started!");
@@ -119,12 +136,7 @@ void FloraNetWeb::runServer()
     }
 
 #ifdef USE_NVS
-    nvs_handle_t nvs_handle;
-    // write in the new current ID before the server sleeps
-    nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    nvs_set_u8(nvs_handle, "current_id", currentId);
-    nvs_commit(nvs_handle);
-    nvs_close(nvs_handle);
+    
 #endif
 
     YIELD();  // for wdt
@@ -177,24 +189,6 @@ void FloraNetWeb::run() {
 
     xTaskCreatePinnedToCore(wifiBlinker, "wifiBlink", 2048, (void *)1, TASK_PRIORITY_WEB, &ledTask, 1);
     #endif
-
-#ifdef USE_NVS
-    // Initialize NVS and get the current packet id
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-      // NVS partition was truncated and needs to be erased
-      // Retry nvs_flash_init
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      err = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(err);
-    nvs_handle_t nvs_handle;
-    nvs_open("storage", NVS_READONLY, &nvs_handle);
-    nvs_get_u8(nvs_handle, "current_id", &currentId);
-    nvs_close(nvs_handle);
-    YIELD();    // for wdt
-#endif
 
     // run the server
     runServer();
