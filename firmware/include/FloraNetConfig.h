@@ -95,6 +95,7 @@
 #define USER_BUTTON 14
 
 #define NEW_MESSAGE_LED 18
+#define WIFI_LED    17
 
 #endif
 

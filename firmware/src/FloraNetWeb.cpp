@@ -118,6 +118,15 @@ void FloraNetWeb::runServer()
       xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_TX_READY);
     }
 
+#ifdef USE_NVS
+    nvs_handle_t nvs_handle;
+    // write in the new current ID before the server sleeps
+    nvs_open("storage", NVS_READWRITE, &nvs_handle);
+    nvs_set_u8(nvs_handle, "current_id", currentId);
+    nvs_commit(nvs_handle);
+    nvs_close(nvs_handle);
+#endif
+
     YIELD();  // for wdt
   }
 
@@ -165,6 +174,8 @@ void FloraNetWeb::run() {
     }
 
     digitalWrite(NEW_MESSAGE_LED, LOW);
+
+    xTaskCreatePinnedToCore(wifiBlinker, "wifiBlink", 2048, (void *)1, TASK_PRIORITY_WEB, &ledTask, 1);
     #endif
 
 #ifdef USE_NVS
@@ -188,12 +199,10 @@ void FloraNetWeb::run() {
     // run the server
     runServer();
 
-#ifdef USE_NVS
-    // write in the new current ID before the server sleeps
-    nvs_open("storage", NVS_READWRITE, &nvs_handle);
-    nvs_set_u8(nvs_handle, "current_id", currentId);
-    nvs_commit(nvs_handle);
-    nvs_close(nvs_handle);
+
+#ifdef FLASH_ON_NEW_MESSAGE
+  vTaskDelete(ledTask);
+  digitalWrite(WIFI_LED, LOW);
 #endif
     // upon timeout, let power manager know its ready to sleep and yield the processor
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);
