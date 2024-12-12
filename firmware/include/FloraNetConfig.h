@@ -43,7 +43,7 @@
 
 // queues and stacks
 #define QUEUE_LENGTH 10 // freertos queue length
-#define STACK_SIZE 8192 // stack size for each task
+#define STACK_SIZE 16184 // stack size for each task
 #define MAX_TICKS_TO_WAIT   10     // maximum ticks to wait when writing to queues
 
 // task priorities
