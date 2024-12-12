@@ -40,7 +40,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Meadow" // WiFi network name
+#define WIFI_SSID "FloraNet Blueberry" // WiFi network name
 
 /*
 
@@ -54,7 +54,7 @@ Comment out to remove debug functionality
 //#define DEBUG
 //#define USE_CS
 #define POWER_SAVER
-//#define TEST_SLEEP
+#define TEST_SLEEP
 #define FLASH_ON_NEW_MESSAGE
 #define USE_NVS
 /*

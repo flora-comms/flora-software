@@ -32,7 +32,6 @@ void FloraNetPower::handleSleep()
     }
 
     // if we are still good to sleep,
-
     // remove buttonISR, set wakeup sources and go to sleep
     // Remove Interupt from button
     DETACH_BUTTONISR();
@@ -84,7 +83,6 @@ void FloraNetPower::handleSleep()
             digitalWrite(NEW_MESSAGE_LED, LOW);
         } else {
             blinkLed = false;
-            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
         }
         
     } while (blinkLed);
@@ -98,13 +96,7 @@ void FloraNetPower::handleSleep()
     // if caused by a button press
     if (wakeCause == ESP_SLEEP_WAKEUP_EXT0)
     {
-        // wait for user button to go high
-        do
-        {
-            vTaskDelay(pdMS_TO_TICKS(100));
-        } while (!digitalRead(USER_BUTTON));
-
-        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY);    // prevent immediate sleep on return.
+        xEventGroupClearBits(xEventGroup, EVENTBIT_WEB_SLEEP_READY); // prevent immediate sleep on return.        
         xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_REQUESTED);        // let the web server know its ready to go
         // check if we've received a lora message
         if (digitalRead(LORA_IRQ) == HIGH)
