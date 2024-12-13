@@ -28,9 +28,7 @@ Uncomment define for the IDE uses. MAKE SURE ONLY ONE IS UNCOMMENTED
 #define ENV_PLATFORMIO
 // #define ENV_ARDUINO
 
-#ifdef ENV_PLATFORMIO
-#include <Arduino.h>
-#endif
+
 /*
 
 ================================
@@ -40,7 +38,7 @@ FIRMWARE
 Variables for firmware configuration
 */
 
-#define WIFI_SSID "FloraNet Blueberry" // WiFi network name
+#define WIFI_SSID "FloraNet" // WiFi network name
 
 /*
 
@@ -53,9 +51,9 @@ Comment out to remove debug functionality
 */
 //#define DEBUG
 //#define USE_CS
-#define POWER_SAVER
-#define TEST_SLEEP
-#define FLASH_ON_NEW_MESSAGE
+//#define POWER_SAVER
+//#define TEST_SLEEP
+//#define FLASH_ON_NEW_MESSAGE
 #define USE_NVS
 /*
 

@@ -2,6 +2,10 @@
 
 // mess with this at your own risk
 
+#ifdef ENV_PLATFORMIO
+#include <Arduino.h>
+#endif
+
 #ifndef FLORANET_CONFIG_H
 #define FLORANET_CONFIG_H
 
