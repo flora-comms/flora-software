@@ -72,6 +72,11 @@ void FloraNetWeb::runServer()
   initWebServer();
   bool timeout = false;
 
+  #ifdef WS_KEEP_ALIVE
+  TaskHandle_t tskKeepAlive;
+  xTaskCreate(wsKeepAlive, "keepalive", 2048, (void *)1, TASK_PRIORITY_WEB, 0);
+  #endif
+
 // for power saving
 #ifdef POWER_SAVER
 #define RESET_TIMER() xTimerReset(xWebTimer, pdMS_TO_TICKS(1000)); timeout = false
@@ -145,6 +150,10 @@ void FloraNetWeb::runServer()
   #ifdef POWER_SAVER
   // delete the timer & return upon timeout
   xTimerDelete(xWebTimer, pdMS_TO_TICKS(1000));
+  #endif
+
+  #ifdef WS_KEEP_ALIVE
+  vTaskDelete(tskKeepAlive);
   #endif
   return;
 }
@@ -235,6 +244,8 @@ void onWsEvent(AsyncWebSocket *socket, AsyncWebSocketClient *client,
 
     // let the protocol task know a message is ready and the web task know something happened on the socket
     xEventGroupSetBits(xEventGroup, EVENTBIT_WEB_RX_DONE | EVENTBIT_SOCKET_ACTION);
+    return;
+  } else {
     return;
   }
 }

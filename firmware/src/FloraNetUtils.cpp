@@ -126,3 +126,12 @@ void wifiBlinker ( void * pvParameter )
         vTaskDelay(pdMS_TO_TICKS(timeout));
     }
 }
+
+void wsKeepAlive( void * pvParameter)
+{
+    while (true)
+    {
+        vTaskDelay(60000); // every minute
+        ws.pingAll();
+    }
+}

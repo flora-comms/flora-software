@@ -55,6 +55,7 @@ Comment out to remove debug functionality
 //#define TEST_SLEEP
 //#define FLASH_ON_NEW_MESSAGE
 #define USE_NVS
+//#define WS_KEEP_ALIVE
 /*
 
 =================================

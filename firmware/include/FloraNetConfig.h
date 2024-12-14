@@ -78,6 +78,9 @@
 #define LORA_MOSI 6
 #define LORA_MISO 3
 #define LORA_SCK 5
+#define NEW_MESSAGE_LED 38
+#define USER_BUTTON 18
+#define WIFI_LED 15
 #endif
 
 // Petal V0.0

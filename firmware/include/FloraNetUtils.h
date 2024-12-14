@@ -64,4 +64,6 @@ extern "C" void buttonISR(void);
 extern "C" void ledBlinker( void * pvParameter);
 
 extern "C" void wifiBlinker( void * pvParameter );
+
+extern "C" void wsKeepAlive( void * pvParameter );
 #endif // FLORANET_UTILS_H
